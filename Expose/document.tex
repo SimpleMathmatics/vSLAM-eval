@@ -1,0 +1,42 @@
+
+% This thesis template is based on the report class of
+% latex. Yout do not need to change this.
+\documentclass[12pt, a4paper]{article}
+
+% This template uses the babel package for customizing
+% labels like Figure/Abbildung etc. Please adust the
+% language parameter if necessary. Currently, it is 
+% set to 'english'. If you write in German adjust the
+% parameter to 'ngerman'
+\usepackage[german]{babel} 
+
+% This includes all variables that are used in this work
+% Use this document to specify your name, your reviewers
+% and other values that you would like to maintain
+% in one place. You can reuse this file later in your thesis
+\include{variables}
+
+% This includes all packages and presets. You do not need
+% to change this file unless you want to add new packages
+% or change the presets of one of the used packages.
+\include{preamble}
+
+% This includes custom latex commands. You can use this
+% file to create your own command sequences.
+\include{commands}
+
+\begin{document}
+    
+    \pagestyle{fancy}
+    
+    \input{title}
+
+    \input{content}
+
+    % This places the bibliography. You can add more
+    % bibliographic items it the bibliography.bib file. 
+    % We suggest using a reference manager (e.g. Jabref)
+    % to maintain this file
+    \bibliography{bibliography}
+
+\end{document}

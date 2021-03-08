@@ -1,0 +1,59 @@
+%\usepackage{bookman}  % Font package
+%\usepackage[light]{CrimsonPro}
+\usepackage{pxfonts}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{blindtext}  % Used for dummy text segments
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{numberbychapter=false}
+\iflanguage{english}{\renewcommand{\lstlistlistingname}{List of Listings}}{\renewcommand{\lstlistlistingname}{Listingsverzeichnis}}
+
+\usepackage{fancyhdr}  % Head and footer styling
+\fancyhf{}
+\fancyhead{}
+\fancyfoot[CO]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+
+\usepackage[a4paper, left=3.5cm, right=3cm, top=3.5cm, bottom=3cm]{geometry}
+\setlength{\headheight}{15pt}
+
+
+\usepackage{titlesec}
+\titleformat{\chapter}{\bf \LARGE}{\thechapter.}{16pt}{\LARGE}
+
+\bibliographystyle{apalike}
+\pagestyle{headings}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1.5em}
+\renewcommand{\baselinestretch}{1.13}  
+
+\lstset{
+    numberstyle=\tiny,
+    numbers=left,
+    showstringspaces=false,
+    breaklines=true,
+    commentstyle=\itshape\color{darkgray},
+    basicstyle=\ttfamily,
+    stringstyle=\color{orange},
+    keywordstyle=\bf\color{green!40!black},
+    identifierstyle=\color{blue}
+}
+
+\hypersetup{
+  pdftitle    = \mytitle,
+  pdfsubject  = \worktype,
+  pdfauthor   = \myname,
+  pdfcreator  = {pdflatex using template provided by University of Applied Sciences FH Kufstein Tirol},
+  bookmarksnumbered = true,
+  colorlinks = true,
+  linkcolor = blue,
+  citecolor = green,
+  urlcolor = orange
+}

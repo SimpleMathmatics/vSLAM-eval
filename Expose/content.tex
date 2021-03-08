@@ -1,0 +1,29 @@
+\section{Ausgangssituation und Problemstellung}
+
+Bei der dreidimensionale Umfeldmodellierung durch Drohnen (im englischen SLAM: Simultaneous Localization and Mapping) geht es darum, mit Hilfe von verschiedenen Sensoren, wie etwa Laser Scannern der RGB Kameras, eine dreidimensionale Karte der Umgebung zu erstellen \citet[1]{Li2016}. \newline
+Es exestieren bereits einige Methoden, um diese Aufgabe zu bewerkstelligen. So ist es etwa möglich, durch Anwendung von Photogrammetrie, allein auf Grundlage von Bildern aus verschiedenen Perspektiven eines Objektes, dieses zu modellieren \citet[2]{Rem2011}. \newline
+ In dieser Arbeit geht es darum, den momentanen Stand in diesem Gebiet zu beschreiben, die gängigsten Methoden zu implementieren und zu vergeleichen, um anschließend eine Handlungsempfehlung für weitere Arbeiten zu verfassen. 
+
+    \section{Relevanz}
+
+Aufgrund der Verfügbarkeit von kostengünstigen Sensoren und Mikrochips, perfomanteren Prozessoren, leistungsstarken Drohnen, leichteren Akkumulatoren mit hohen Energiegehalt und insbesondere von fortschrittlicher Software, stieg die Verwendung von Drohnen in den letzten Jahren enorm. So kommen diese auch für die Umfeldmodellierung des Raumes, etwa in der Baubranche, in der Geologie, der Industrie oder der Rettung vermehrt zum Einsatz \citet[3]{San}. \newline
+Mit dieser Arbeit sollen die schnell vorranschreitende Entwicklungen auf diesem Gebiet, und vor allem die State-of-the-Art Technologien, dargestellt werden. Der Überblick und transparente Vergleich der Methoden schafft die Grundlage für die Verwendung und Weiterentwicklung für bestehende und neue Techniken. Die Resultate der Tests könnten als Entscheidungsbasis für weitere Anwender dienen. Durch den Entwurf einer Handlungsempfehlung für weitere Arbeiten kann der zielgerichtete Fortschritt in dem Bereich der Umfeldmodellierung unter Verwendung von Drohnen vorrangetrieben werden.
+
+
+    \section{Zielsetzung und Ergebnisse}
+
+Als Zielsetzung dieser Arbeit gilt zunächst die fundierte Auswahl der zu vergleichenden Methoden. Durch gründliche Recherche werden nur die für die Wissenschaft momentan relevantesten Technologien untersucht. Die Versuche geschiehen nach wissenschaftlichen Standards und größtmöglicher Transparenz. \newline
+Das gewünschte Ergebnis ist einerseits die gegenständliche Darstellung der Versuchsergegebnisse und andererseits die Ausarbeitung einer schlüssigen Handlungsempfehlung. 
+
+    \textbf{Abgeleitete Forschungsfrage:} Was sind die gegenwärtig relevantesten Methoden für eine Umfeldmodellierung des dreidimensionalen Raumes und welche Resulate ergeben sich aus dem Vergleich dieser Technologien hinsichtlich Schnelligkeit und Effizienz?
+
+
+
+    \section{Vorgehensweise und Methoden}
+
+Die Vorgehensweise gliedert sich in drei Teile, welche chronologisch bearbeitet werden. \newline
+Zunächst gilt es bestehende und gegebenenfalls selbst entwickelte Algorithmen und Methodiken der Modellierung des dreidimensionalen Raumes durch Drohnen virtuell zu simulieren und zu vergleichen. Für die Simulation des Raumes und der Drohne wird eine bestehende Umgebung der Fachhochschule Kufstein, welche auf der Open Source Software Gazebo basiert, verwendet. In dieser Umgebung kann das Flugverhalten, Sensorwerte und physikalische Größen realitätsnah dargestellt werden. Die Implementierung der Algorithmen geschieht auf Grundlage von der Software Robot Operating System (ROS), die es erlaubt, Robotersysteme wie etwa Drohnen anzusteuern. Der Vergleich der Algorithmen erfolgt über zuvor definierte Testmetriken, welche fundiert die Schnelligkeit und Effizienz der Methoden erfassen. \newline
+Im zweiten Schritt verlagere ich den Versuch vom Virtuellen in das Reale. Die Algorithmen mit den besten Resultaten aus dem ersten Schritt können unter homogenen Testbedingungen in der Sporthalle der Fachhochschule Kufstein untersucht werden. Hierfür wurde in der Sporthalle ein System errichtet, mit dem die absolute Position einer Drohne erfasst werden kann (wie das auch in der virtuellen Umgebung Vorraussetzung ist). \newline
+Zuletzt werden die dokumentierten Ergebnisse allumfassend ausgewertet und eine Handlungsempfehlung für weitere Arbeiten verfasst. 
+
+
