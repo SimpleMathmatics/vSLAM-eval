@@ -1,6 +1,8 @@
 # Folders
-data/*
-thesis/Masterarbeit/tmp/ 
+data
+thesis/Masterarbeit/tmp
+evaluation/tmp
+.ipynb_checkpoints
 
 # Fileendings
 .project
