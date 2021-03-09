@@ -98,3 +98,9 @@ class FramePreprocessor:
 
         df_est_trans = np.array([s * np.dot(R, p) + t for p in self.est_pos_df[["p_x", "p_y", "p_z"]].to_numpy()])
         self.est_pos_df = pd.DataFrame({"timestamp": self.est_pos_df["timestamp"], "p_x": df_est_trans[:,0], "p_y": df_est_trans[:, 1], "p_z": df_est_trans[:, 2]})
+
+    def get_gt_pos_df(self):
+        return self.gt_pos_df
+
+    def get_est_pos_df(self):
+        return self.est_pos_df
