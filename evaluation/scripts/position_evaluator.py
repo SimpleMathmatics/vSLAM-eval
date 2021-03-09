@@ -24,16 +24,16 @@ class Evaluator:
             os.mkdir(outdir)
 
         # x against y
-        fig = create_pos_dif_plots(self.est_df, self.gt_df, "x", "y")
-        fig.write_image(outdir + "x_y.png")
+        fig = create_pos_dif_plots(self.est_df, self.gt_df, "p_x", "p_y")
+        fig.write_image(os.path.join(outdir, "x_y.png"))
 
         # x against z
-        fig = create_pos_dif_plots(self.est_df, self.gt_df, "x", "z")
-        fig.write_image(outdir + "x_z.png")
+        fig = create_pos_dif_plots(self.est_df, self.gt_df, "p_x", "p_z")
+        fig.write_image(os.path.join(outdir, "x_z.png"))
 
         # y against z
-        fig = create_pos_dif_plots(self.est_df, self.gt_df, "y", "z")
-        fig.write_image(outdir + "y_z.png")
+        fig = create_pos_dif_plots(self.est_df, self.gt_df, "p_y", "p_z")
+        fig.write_image(os.path.join(outdir, "y_z.png"))
 
         # transform via pca and plot pc1 against pc2
         pca1 = sd.PCA(n_components=2)
@@ -45,7 +45,7 @@ class Evaluator:
         transformed_gt_df = pca2.transform(self.gt_df[["p_x", "p_y", "p_z"]])
         transformed_gt_df = pd.DataFrame({"PC1": transformed_gt_df[:, 0], "PC2": transformed_gt_df[:, 1]})
         fig = create_pos_dif_plots(transformed_est_df, transformed_gt_df, "PC1", "PC2")
-        fig.write_image(outdir + "pca.png")
+        fig.write_image(os.path.join(outdir, "pca.png"))
 
     def calculate_mean_diff(self):
         dists = np.array([])

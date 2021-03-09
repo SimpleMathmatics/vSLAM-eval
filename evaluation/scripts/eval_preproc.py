@@ -32,7 +32,7 @@ class FramePreprocessor:
             self.est_pos_df = df_calc[["timestamp", "p_x", "p_y", "p_z"]]
 
     def align_timestamps(self):
-        if not all([isinstance(self.est_pos_df,pd.DataFrame),isinstance(self.gt_pos_df, pd.DataFrame)]):
+        if all([isinstance(self.est_pos_df, pd.DataFrame), isinstance(self.gt_pos_df, pd.DataFrame)]):
             gt_ts = self.gt_pos_df["timestamp"].to_numpy()
             est_ts = self.est_pos_df["timestamp"].to_numpy()
             if not (np.all(np.diff(est_ts) >= 0) and np.all(np.diff(gt_ts) >= 0)):
@@ -61,6 +61,8 @@ class FramePreprocessor:
 
             if not self.gt_pos_df.shape == self.est_pos_df.shape:
                 raise ValueError("Something went wrong, position dataframes of different dimension!")
+        else:
+            raise ValueError("No dataframes found!")
 
     def transform_coordinate_system(self):
         if not self.gt_pos_df.shape == self.est_pos_df.shape:
