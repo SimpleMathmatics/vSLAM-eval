@@ -6,15 +6,15 @@ from cli_command_gen import CommandGenerator
 import shutil
 from eval_preproc import FramePreprocessor
 from position_evaluator import Evaluator
+import subprocess
 
-
-PATH_TO_METADATA = "../config/data_meta.xlsx"
-PATH_TO_ORB_SLAM = "~/ORB-slam3"
+PATH_TO_METADATA = "../config/data_meta.csv"
+PATH_TO_ORB_SLAM = "~/ORB_SLAM3"
 PATH_TO_TMP_DIR = "../tmp"
 PATH_TO_RESULT_DIR = "../results"
 
 if __name__ == "__main__":
-    data_metadata = pd.read_excel(PATH_TO_METADATA)
+    data_metadata = pd.read_csv(PATH_TO_METADATA, sep=";")
 
     # itarate throu each dataset (=row in df) and run all algorithms
     for i in range(data_metadata.shape[0]):
@@ -27,39 +27,42 @@ if __name__ == "__main__":
         ###############################
         dh = DataHandler(filename=filename, url=url, dest=PATH_TO_TMP_DIR)
         print("downloading {}...".format(filename))
-        dh.download()
+        # dh.download()
         print("unzipping {}...".format(filename))
-        dh.unzip()
+        # dh.unzip()
         print("deleting zip file...")
-        dh.delete_zip()
+        # dh.delete_zip()
 
         ################################
         # run algorithms
         ################################
-        cg = CommandGenerator()
+#        cg = CommandGenerator()
         if platform == "linux" or platform == "linux2":
             ##################### ORB ###########################
-            command = cg.orb(filename=filename,
-                             path_to_orb=PATH_TO_ORB_SLAM,
-                             path_to_data=PATH_TO_TMP_DIR,
-                             dataset=dataset)
-            print("Running ORB slam on {}!".format(filename))
-            os.system(command)
+#            command = cg.orb(filename=filename,
+#                             path_to_orb=PATH_TO_ORB_SLAM,
+#                             path_to_data=PATH_TO_TMP_DIR,
+#                             dataset=dataset)
+#             print("Running ORB slam on {}!".format(filename))
+#            print(command)
+#            process = subprocess.Popen(command, shell=True)
+#            process.wait()
+#            print(process.returncode)
             res_orb_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "ORB")
             res_orb_img_dir = os.path.join(res_orb_dir, "img")
             res_orb_raw_dir = os.path.join(res_orb_dir, "raw_out")
             if not os.path.exists(res_orb_dir):
-                os.mkdir(res_orb_dir)
+                os.makedirs(res_orb_dir, exist_ok=True)
             if not os.path.exists(res_orb_img_dir):
-                os.mkdir(res_orb_img_dir)
+                os.makedirs(res_orb_img_dir, exist_ok=True)
             if not os.path.exists(res_orb_raw_dir):
-                os.mkdir(res_orb_raw_dir)
+                os.makedirs(res_orb_raw_dir, exist_ok=True)
             # try to copy the output in the right place
-            try:
-                shutil.move("f_dataset-{}_mono.txt".format(filename), os.path.join(res_orb_raw_dir, "estimated_data.txt"))
-            except:
-                raise ValueError("Something went wrong! Could not copy output file!")
-            preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0", "cam0",
+#            try:
+#                shutil.move("CameraTrajectory.txt".format(filename), os.path.join(res_orb_raw_dir, "estimated_data.txt"))
+#            except:
+#                raise ValueError("Something went wrong! Could not copy output file!")
+            preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
                                                                  "state_groundtruth_estimate0", "data.csv"),
                                         est_filepath=os.path.join(res_orb_raw_dir, "estimated_data.txt"),
                                         dataset_type=dataset)

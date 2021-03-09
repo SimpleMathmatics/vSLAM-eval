@@ -13,30 +13,7 @@ class FramePreprocessor:
 
     def create_gt_pos_df(self):
         if self.dataset_type == "euroc":
-            expected_colnames = [
-                "#timestamp",
-                " p_RS_R_x [m]",
-                " p_RS_R_y [m]",
-                " p_RS_R_z [m]",
-                " q_RS_w []",
-                " q_RS_x []",
-                " q_RS_y []",
-                " q_RS_z []",
-                " v_RS_R_x [m s^-1]",
-                " v_RS_R_y [m s^-1]",
-                " v_RS_R_z [m s^-1]",
-                " b_w_RS_S_x [rad s^-1]",
-                " b_w_RS_S_y [rad s^-1]",
-                " b_w_RS_S_z [rad s^-1]",
-                " b_a_RS_S_x [m s^-2]",
-                " b_a_RS_S_y [m s^-2]",
-                " b_a_RS_S_z [m s^-2]"
-                ]
-        
             gt_df = pd.read_csv(self.gt_filepath, sep=",")
-            
-            if gt_df.columns != expected_colnames:
-                raise ValueError("Not all necessary columns are present!")
             
             # for now only use positional dataset_type
             gt_pos_df = pd.DataFrame({"timestamp": gt_df["#timestamp"],
@@ -55,7 +32,7 @@ class FramePreprocessor:
             self.est_pos_df = df_calc[["timestamp", "p_x", "p_y", "p_z"]]
 
     def align_timestamps(self):
-        if not self.est_pos_df and not self.gt_pos_df:
+        if not all([isinstance(self.est_pos_df,pd.DataFrame),isinstance(self.gt_pos_df, pd.DataFrame)]):
             gt_ts = self.gt_pos_df["timestamp"].to_numpy()
             est_ts = self.est_pos_df["timestamp"].to_numpy()
             if not (np.all(np.diff(est_ts) >= 0) and np.all(np.diff(gt_ts) >= 0)):
