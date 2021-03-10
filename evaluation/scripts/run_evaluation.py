@@ -57,10 +57,10 @@ if __name__ == "__main__":
             if not os.path.exists(res_orb_raw_dir):
                 os.makedirs(res_orb_raw_dir, exist_ok=True)
             # try to copy the output in the right place
-                try:
-                    shutil.move("CameraTrajectory.txt".format(filename), os.path.join(res_orb_raw_dir, "estimated_data.txt"))
-                except:
-                    raise ValueError("Something went wrong! Could not copy output file!")
+            try:
+                shutil.move("CameraTrajectory.txt", os.path.join(res_orb_raw_dir, "estimated_data.txt"))
+            except:
+                raise ValueError("Something went wrong! Could not copy output file!")
             preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
                                                                  "state_groundtruth_estimate0", "data.csv"),
                                         est_filepath=os.path.join(res_orb_raw_dir, "estimated_data.txt"),
