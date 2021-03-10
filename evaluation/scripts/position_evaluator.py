@@ -25,15 +25,15 @@ class Evaluator:
 
         # x against y
         fig = create_pos_dif_plots(self.est_df, self.gt_df, "p_x", "p_y")
-        fig.write_image(os.path.join(outdir, "x_y.png"))
+        fig.write_image(os.path.join(outdir, "x_y.png"), engine="kaleido")
 
         # x against z
         fig = create_pos_dif_plots(self.est_df, self.gt_df, "p_x", "p_z")
-        fig.write_image(os.path.join(outdir, "x_z.png"))
+        fig.write_image(os.path.join(outdir, "x_z.png"), engine="kaleido")
 
         # y against z
         fig = create_pos_dif_plots(self.est_df, self.gt_df, "p_y", "p_z")
-        fig.write_image(os.path.join(outdir, "y_z.png"))
+        fig.write_image(os.path.join(outdir, "y_z.png"), engine="kaleido")
 
         # transform via pca and plot pc1 against pc2
         pca1 = sd.PCA(n_components=2)
@@ -45,7 +45,7 @@ class Evaluator:
         transformed_gt_df = pca2.transform(self.gt_df[["p_x", "p_y", "p_z"]])
         transformed_gt_df = pd.DataFrame({"PC1": transformed_gt_df[:, 0], "PC2": transformed_gt_df[:, 1]})
         fig = create_pos_dif_plots(transformed_est_df, transformed_gt_df, "PC1", "PC2")
-        fig.write_image(os.path.join(outdir, "pca.png"))
+        fig.write_image(os.path.join(outdir, "pca.png"), engine="kaleido")
 
     def calculate_mean_diff(self):
         dists = np.array([])

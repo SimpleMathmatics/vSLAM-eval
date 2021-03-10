@@ -18,9 +18,9 @@ if __name__ == "__main__":
 
     # itarate throu each dataset (=row in df) and run all algorithms
     for i in range(data_metadata.shape[0]):
-        filename = data_metadata.iloc[0, 0]
-        url = data_metadata.iloc[0, 1]
-        dataset = data_metadata.iloc[0, 2]
+        filename = data_metadata.iloc[i, 0]
+        url = data_metadata.iloc[i, 1]
+        dataset = data_metadata.iloc[i, 2]
 
         ###############################
         # get the data
@@ -43,8 +43,7 @@ if __name__ == "__main__":
                              path_to_orb=PATH_TO_ORB_SLAM,
                              path_to_data=PATH_TO_TMP_DIR,
                              dataset=dataset)
-             print("Running ORB slam on {}!".format(filename))
-            print(command)
+            print("Running ORB slam on {}!".format(filename))
             process = subprocess.Popen(command, shell=True)
             process.wait()
             print(process.returncode)
