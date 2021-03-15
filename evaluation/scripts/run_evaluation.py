@@ -88,8 +88,9 @@ if __name__ == "__main__":
                 raise ValueError("Could not run ORB-Slam")
 
             finally:
-                # clean up the files
-                dh.clean_download_dir()
+                # clean up the files if not done yet
+                if os.path.exists(PATH_TO_TMP_DIR):
+                    dh.clean_download_dir()
 
         else:
             print("Slam algorithms can only be run on linux; skipping...")
