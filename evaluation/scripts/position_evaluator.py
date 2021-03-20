@@ -4,7 +4,7 @@ import sklearn.decomposition as sd
 import os
 import pandas as pd
 import numpy as np
-import json
+from json_helper import JsonHelper
 
 
 class Evaluator:
@@ -63,11 +63,8 @@ class Evaluator:
         fig.write_image(os.path.join(outdir_plot, "distance.png"), engine="kaleido")
 
         # generate json file with result and write to
-        result_dict = {
-            'mean_dist_error': mean_diff
-        }
-        with open(os.path.join(outdir_json, "results.txt"), 'w') as json_file:
-            json.dump(result_dict, json_file)
+        jh = JsonHelper()
+        jh.add_json(os.path.join(outdir_json, "results.txt"), "mean distance error", mean_diff)
 
 
 

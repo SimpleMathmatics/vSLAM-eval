@@ -7,6 +7,8 @@ import shutil
 from eval_preproc import FramePreprocessor
 from position_evaluator import Evaluator
 import subprocess
+import time
+from json_helper import JsonHelper
 
 # TODO: make script executable with params
 PATH_TO_METADATA = "../config/data_meta.csv"
@@ -45,13 +47,6 @@ if __name__ == "__main__":
         if platform == "linux" or platform == "linux2":
             try:
                 ##################### ORB ###########################
-                command = cg.orb(filename=filename,
-                                 path_to_orb=PATH_TO_ORB_SLAM,
-                                 path_to_data=PATH_TO_TMP_DIR,
-                                 dataset=dataset)
-                print("Running ORB slam on {}!".format(filename))
-                process = subprocess.Popen(command, shell=True)
-                process.wait()
                 res_orb_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "ORB")
                 res_orb_img_dir = os.path.join(res_orb_dir, "img")
                 res_orb_json_dir = os.path.join(res_orb_dir, "json")
@@ -64,6 +59,21 @@ if __name__ == "__main__":
                     os.makedirs(res_orb_raw_dir, exist_ok=True)
                 if not os.path.exists(res_orb_json_dir):
                     os.makedirs(res_orb_json_dir, exist_ok=True)
+
+                command = cg.orb(filename=filename,
+                                 path_to_orb=PATH_TO_ORB_SLAM,
+                                 path_to_data=PATH_TO_TMP_DIR,
+                                 dataset=dataset)
+                print("Running ORB slam on {}!".format(filename))
+                t1 = time.perf_counter()
+                process = subprocess.Popen(command, shell=True)
+                process.wait()
+                t2 = time.perf_counter()
+
+                # write the elapsed time to json file
+                elapsed = t2 - t1
+                jh = JsonHelper()
+                jh.add_json(os.path.join(res_orb_json_dir, "result.txt"), "processing_time", elapsed)
 
                 # try to copy the output in the right place
                 try:
