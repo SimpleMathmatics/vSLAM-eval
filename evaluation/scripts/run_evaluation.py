@@ -54,6 +54,7 @@ if __name__ == "__main__":
                 process.wait()
                 res_orb_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "ORB")
                 res_orb_img_dir = os.path.join(res_orb_dir, "img")
+                res_orb_json_dir = os.path.join(res_orb_dir, "json")
                 res_orb_raw_dir = os.path.join(res_orb_dir, "raw_out")
                 if not os.path.exists(res_orb_dir):
                     os.makedirs(res_orb_dir, exist_ok=True)
@@ -61,6 +62,9 @@ if __name__ == "__main__":
                     os.makedirs(res_orb_img_dir, exist_ok=True)
                 if not os.path.exists(res_orb_raw_dir):
                     os.makedirs(res_orb_raw_dir, exist_ok=True)
+                if not os.path.exists(res_orb_raw_dir):
+                    os.makedirs(res_orb_json_dir, exist_ok=True)
+
                 # try to copy the output in the right place
                 try:
                     shutil.move("CameraTrajectory.txt".format(filename), os.path.join(res_orb_raw_dir, "estimated_data.txt"))
@@ -81,6 +85,7 @@ if __name__ == "__main__":
                 position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
                                           est_df=preproc.get_est_pos_df())
                 position_eval.create_pos_dif_plots(outdir=res_orb_img_dir)
+                position_eval.calculate_diff(outdir_plot=res_orb_img_dir, outdir_json=res_orb_json_dir)
                 print("cleaning up the download directory...")
                 dh.clean_download_dir()
 

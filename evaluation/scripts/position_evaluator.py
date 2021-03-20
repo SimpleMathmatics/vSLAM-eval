@@ -4,6 +4,7 @@ import sklearn.decomposition as sd
 import os
 import pandas as pd
 import numpy as np
+import json
 
 
 class Evaluator:
@@ -47,7 +48,7 @@ class Evaluator:
         fig = create_pos_dif_plots(transformed_est_df, transformed_gt_df, "PC1", "PC2")
         fig.write_image(os.path.join(outdir, "pca.png"), engine="kaleido")
 
-    def calculate_mean_diff(self):
+    def calculate_diff(self, outdir_plot, outdir_json):
         dists = np.array([])
         for i in range(self.est_df.shape[0]):
             p1 = np.array([self.est_df.iloc[i, 1], self.est_df.iloc[i, 2], self.est_df.iloc[i, 3]])
@@ -55,4 +56,19 @@ class Evaluator:
             dist = np.linalg.norm(p1-p2)
             dists.append(dist)
         mean_diff = np.mean(dists)
-        return mean_diff
+        print("mean difference position error: {}".format(mean_diff))
+
+        # generate plot of the distances of each timeunit
+        fig = go.Figure(data=go.Scatter(x=self.est_df.timestamp.to_numpy(), y=dists))
+        fig.write_image(os.path.join(outdir_plot, "distance.png"), engine="kaleido")
+
+        # generate json file with result and write to
+        result_dict = {
+            'mean_dist_error': mean_diff
+        }
+        with open(os.path.join(outdir_json, "results"), 'w') as json_file:
+            json.dump(result_dict, json_file)
+
+
+
+
