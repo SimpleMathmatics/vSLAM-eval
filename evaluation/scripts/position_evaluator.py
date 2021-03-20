@@ -49,7 +49,7 @@ class Evaluator:
         fig.write_image(os.path.join(outdir, "pca.png"), engine="kaleido")
 
     def calculate_diff(self, outdir_plot, outdir_json):
-        dists = np.array([])
+        dists = []
         for i in range(self.est_df.shape[0]):
             p1 = np.array([self.est_df.iloc[i, 1], self.est_df.iloc[i, 2], self.est_df.iloc[i, 3]])
             p2 = np.array([self.gt_df.iloc[i, 1], self.gt_df.iloc[i, 2], self.gt_df.iloc[i, 3]])
@@ -66,7 +66,7 @@ class Evaluator:
         result_dict = {
             'mean_dist_error': mean_diff
         }
-        with open(os.path.join(outdir_json, "results"), 'w') as json_file:
+        with open(os.path.join(outdir_json, "results.txt"), 'w') as json_file:
             json.dump(result_dict, json_file)
 
 

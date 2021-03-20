@@ -18,7 +18,7 @@ if __name__ == "__main__":
     data_metadata = pd.read_csv(PATH_TO_METADATA, sep=";")
 
     # itarate throu each dataset (=row in df) and run all algorithms
-    for i in [4]:
+    for i in [3]:
         filename = data_metadata.iloc[i, 0]
         url = data_metadata.iloc[i, 1]
         dataset = data_metadata.iloc[i, 2]
@@ -49,9 +49,9 @@ if __name__ == "__main__":
                                  path_to_orb=PATH_TO_ORB_SLAM,
                                  path_to_data=PATH_TO_TMP_DIR,
                                  dataset=dataset)
-                print("Running ORB slam on {}!".format(filename))
-                process = subprocess.Popen(command, shell=True)
-                process.wait()
+ #               print("Running ORB slam on {}!".format(filename))
+ #               process = subprocess.Popen(command, shell=True)
+ #               process.wait()
                 res_orb_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "ORB")
                 res_orb_img_dir = os.path.join(res_orb_dir, "img")
                 res_orb_json_dir = os.path.join(res_orb_dir, "json")
@@ -62,19 +62,19 @@ if __name__ == "__main__":
                     os.makedirs(res_orb_img_dir, exist_ok=True)
                 if not os.path.exists(res_orb_raw_dir):
                     os.makedirs(res_orb_raw_dir, exist_ok=True)
-                if not os.path.exists(res_orb_raw_dir):
+                if not os.path.exists(res_orb_json_dir):
                     os.makedirs(res_orb_json_dir, exist_ok=True)
 
                 # try to copy the output in the right place
-                try:
-                    shutil.move("CameraTrajectory.txt".format(filename), os.path.join(res_orb_raw_dir, "estimated_data.txt"))
-                except:
-                    raise ValueError("Something went wrong! Could not copy output file!")
+ #               try:
+ #                   shutil.move("CameraTrajectory.txt".format(filename), os.path.join(res_orb_raw_dir, "estimated_data.txt"))
+ #               except:
+ #                   raise ValueError("Something went wrong! Could not copy output file!")
                 preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
                                                                      "state_groundtruth_estimate0", "data.csv"),
                                             est_filepath=os.path.join(res_orb_raw_dir, "estimated_data.txt"),
                                             dataset_type=dataset)
-                print("reading in the result dataframes...")
+ #               print("reading in the result dataframes...")
                 preproc.create_est_pos_df()
                 preproc.create_gt_pos_df()
                 print("aligning the timestamps...")

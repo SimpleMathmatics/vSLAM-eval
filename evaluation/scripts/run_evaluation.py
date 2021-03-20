@@ -62,7 +62,7 @@ if __name__ == "__main__":
                     os.makedirs(res_orb_img_dir, exist_ok=True)
                 if not os.path.exists(res_orb_raw_dir):
                     os.makedirs(res_orb_raw_dir, exist_ok=True)
-                if not os.path.exists(res_orb_raw_dir):
+                if not os.path.exists(res_orb_json_dir):
                     os.makedirs(res_orb_json_dir, exist_ok=True)
 
                 # try to copy the output in the right place
