@@ -8,6 +8,7 @@ from eval_preproc import FramePreprocessor
 from position_evaluator import Evaluator
 import subprocess
 
+# TODO: make script executable with params
 PATH_TO_METADATA = "../config/data_meta.csv"
 PATH_TO_ORB_SLAM = "~/ORB_SLAM3"
 PATH_TO_TMP_DIR = "../tmp"
@@ -51,7 +52,6 @@ if __name__ == "__main__":
                 print("Running ORB slam on {}!".format(filename))
                 process = subprocess.Popen(command, shell=True)
                 process.wait()
-                print(process.returncode)
                 res_orb_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "ORB")
                 res_orb_img_dir = os.path.join(res_orb_dir, "img")
                 res_orb_raw_dir = os.path.join(res_orb_dir, "raw_out")
