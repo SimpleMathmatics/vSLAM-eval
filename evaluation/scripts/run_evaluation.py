@@ -74,7 +74,7 @@ if __name__ == "__main__":
                                                                    filename,
                                                                    "mav0",
                                                                    "cam0",
-                                                                   "data"), 450, 286)
+                                                                   "data"), 550, 350)
 
                     cg = CommandGenerator()
                     command = cg.orb(filename=filename,
@@ -92,7 +92,7 @@ if __name__ == "__main__":
                     # write the elapsed time to json file
                     elapsed = t2 - t1
                     jh = JsonHelper()
-                    jh.add_json(os.path.join(res_orb_json_dir, "result.txt"), "processing_time", elapsed)
+                    jh.add_json(os.path.join(res_orb_json_dir, "results.txt"), "processing_time", elapsed)
 
                     # try to copy the output in the right place
                     try:
