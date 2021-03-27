@@ -1,1 +1,1 @@
-{"mean_dist_error": 0.08233396173882478}
+{"mean_dist_error": 0.08233396173882478, "processing_time": 302.52944106100006, "mean distance error": 0.08221293608296987}
