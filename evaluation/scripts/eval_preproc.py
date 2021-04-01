@@ -15,12 +15,12 @@ class FramePreprocessor:
 
     @staticmethod
     def standardize_timestamp(ts):
-        ts = str(ts)
+        ts = '{0:.10f}'.format(ts)
         ts_head = ts[0:10]
-        if ts.__contains__("."):
-            ts_tail = ts[11:len(ts)]
+        if ts[10] == ".":
+            ts_tail = ts[11:14]
         else:
-            ts_tail = ts[10:len(ts)]
+            ts_tail = ts[10:13]
         ts_out = ts_head + "." + ts_tail
         return float(ts_out)
 
