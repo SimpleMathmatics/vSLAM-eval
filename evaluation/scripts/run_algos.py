@@ -27,7 +27,7 @@ if __name__ == "__main__":
         url = data_metadata.iloc[i, 1]
         dataset = data_metadata.iloc[i, 2]
         run = data_metadata.iloc[i, 3]
-        eval_resolution = data_metadata[i, 4]
+        eval_resolution = data_metadata.iloc[i, 4]
 
         ###############################
         # get the data
@@ -105,7 +105,8 @@ if __name__ == "__main__":
                     preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
                                                                          "state_groundtruth_estimate0", "data.csv"),
                                                 est_filepath=os.path.join(res_orb_data_dir, "estimated_data.txt"),
-                                                dataset_type=dataset)
+                                                dataset_type=dataset,
+						outdir_data=res_orb_data_dir)
                     print("reading in the result dataframes...")
                     preproc.create_est_pos_df()
                     preproc.create_gt_pos_df()
@@ -161,7 +162,8 @@ if __name__ == "__main__":
                     preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
                                                                          "state_groundtruth_estimate0", "data.csv"),
                                                 est_filepath=os.path.join(res_dsm_data_dir, "estimated_data.txt"),
-                                                dataset_type=dataset)
+                                                dataset_type=dataset,
+						outdir_data=res_dsm_data_dir)
                     print("reading in the result dataframes...")
                     preproc.create_est_pos_df()
                     preproc.create_gt_pos_df()
