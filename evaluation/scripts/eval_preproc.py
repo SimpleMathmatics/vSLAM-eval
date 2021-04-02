@@ -116,13 +116,11 @@ class FramePreprocessor:
         np.save(os.path.join(outdir, "rotation_matrix.npy"))
 
         df_est_trans = np.array([s * np.dot(R, p) + t for p in self.est_pos_df[["p_x", "p_y", "p_z"]].to_numpy()])
-        self.est_pos_df = pd.DataFrame({"timestamp": self.est_pos_df["timestamp"], "p_x": df_est_trans[:,0], "p_y": df_est_trans[:, 1], "p_z": df_est_trans[:, 2]})
+        self.est_pos_df = pd.DataFrame({"timestamp": self.est_pos_df["timestamp"], "p_x": df_est_trans[:, 0], "p_y": df_est_trans[:, 1], "p_z": df_est_trans[:, 2]})
+        self.est_pos_df.to_csv(os.path.join(outdir, "est_df_transformed.csv"))
 
     def get_gt_pos_df(self):
         return self.gt_pos_df
 
     def get_est_pos_df(self):
         return self.est_pos_df
-
-    def save_est_pos_df(self, filename):
-        self.est_pos_df.to_csv(filename)
