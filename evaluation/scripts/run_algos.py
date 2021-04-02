@@ -40,7 +40,7 @@ if __name__ == "__main__":
             if (resolution != 1) and (not eval_resolution):
                 continue
 
-            if resolution == 1:
+            if resolution == 15:
                 dh = DataHandler(filename=filename, url=url, dest=PATH_TO_TMP_DIR)
                 print("downloading {}...".format(filename))
                 dh.download()
@@ -113,7 +113,7 @@ if __name__ == "__main__":
                     print("aligning the timestamps...")
                     preproc.align_timestamps()
                     print("transforming the coordinate system...")
-                    preproc.transform_coordinate_system()
+                    preproc.transform_coordinate_system(outdir=res_orb_data_dir)
                     print("evaluating...")
                     position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
                                               est_df=preproc.get_est_pos_df())
@@ -179,12 +179,13 @@ if __name__ == "__main__":
                     position_eval.calculate_diff(outdir_plot=res_dsm_img_dir, outdir_json=res_dsm_data_dir)
 
                     print("cleaning up the download directory...")
-                    if resolution == 0.2:
+                    if resolution == 0.22:
                         dh.clean_download_dir()
 
                 except:
-                    if os.path.exists(PATH_TO_TMP_DIR):
-                        dh.clean_download_dir()
+                    # if os.path.exists(PATH_TO_TMP_DIR):
+                      #  dh.clean_download_dir()
+		      #	pass
                     raise ValueError("Could not run ORB-Slam")
 
             else:

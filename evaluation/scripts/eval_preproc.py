@@ -45,8 +45,6 @@ class FramePreprocessor:
                 for invalid_sep in invalid_seps:
                     line = line.replace(invalid_sep, target_sep)
                 lines_out.append(line)
-                print(line)
-            print(lines_out)
             file.truncate(0)
             file.close()
             file = open(filepath, "w")
@@ -107,13 +105,13 @@ class FramePreprocessor:
         s, R, t = align_umeyama(self.gt_pos_df[["p_x", "p_y", "p_z"]].to_numpy(),
                                 self.est_pos_df[["p_x", "p_y", "p_z"]].to_numpy())
         print("Scaling-Factor: {}".format(str(np.round(s, 2))))
-        np.save(os.path.join(outdir, "scale.npy"))
+        np.save(os.path.join(outdir, "scale.npy"),np.array(s))
         print("Translation-Vector:")
         print(t)
-        np.save(os.path.join(outdir, "trans_vec.npy"))
+        np.save(os.path.join(outdir, "trans_vec.npy"), t)
         print("Rotation Matrix:")
         print(R)
-        np.save(os.path.join(outdir, "rotation_matrix.npy"))
+        np.save(os.path.join(outdir, "rotation_matrix.npy"), R)
 
         df_est_trans = np.array([s * np.dot(R, p) + t for p in self.est_pos_df[["p_x", "p_y", "p_z"]].to_numpy()])
         self.est_pos_df = pd.DataFrame({"timestamp": self.est_pos_df["timestamp"], "p_x": df_est_trans[:,0], "p_y": df_est_trans[:, 1], "p_z": df_est_trans[:, 2]})
