@@ -59,7 +59,7 @@ if __name__ == "__main__":
                     if resolution != 1:
                         res_orb_dir = os.path.join(PATH_TO_RESULT_DIR, filename + str(resolution), "ORB")
                     res_orb_img_dir = os.path.join(res_orb_dir, "img")
-                    res_orb_data_dir = os.path.join(res_orb_dir, "json")
+                    res_orb_data_dir = os.path.join(res_orb_dir, "data")
 
                     if not os.path.exists(res_orb_dir):
                         os.makedirs(res_orb_dir, exist_ok=True)
@@ -121,63 +121,62 @@ if __name__ == "__main__":
                     position_eval.calculate_diff(outdir_plot=res_orb_img_dir, outdir_json=res_orb_data_dir)
 
                     ##################### DSM ###########################
-                    res_dsm_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "DSM")
-                    if resolution != 1:
-                        res_dsm_dir = os.path.join(PATH_TO_RESULT_DIR, filename + str(resolution), "DSM")
-                    res_dsm_img_dir = os.path.join(res_dsm_dir, "img")
-                    res_dsm_data_dir = os.path.join(res_dsm_dir, "data")
+                    if resolution == 1:
+                        res_dsm_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "DSM")
+                        if resolution != 1:
+                            res_dsm_dir = os.path.join(PATH_TO_RESULT_DIR, filename + str(resolution), "DSM")
+                        res_dsm_img_dir = os.path.join(res_dsm_dir, "img")
+                        res_dsm_data_dir = os.path.join(res_dsm_dir, "data")
 
-                    if not os.path.exists(res_dsm_dir):
-                        os.makedirs(res_dsm_dir, exist_ok=True)
-                    if not os.path.exists(res_dsm_img_dir):
-                        os.makedirs(res_dsm_img_dir, exist_ok=True)
-                    if not os.path.exists(res_dsm_data_dir):
-                        os.makedirs(res_dsm_data_dir, exist_ok=True)
+                        if not os.path.exists(res_dsm_dir):
+                            os.makedirs(res_dsm_dir, exist_ok=True)
+                        if not os.path.exists(res_dsm_img_dir):
+                            os.makedirs(res_dsm_img_dir, exist_ok=True)
+                        if not os.path.exists(res_dsm_data_dir):
+                            os.makedirs(res_dsm_data_dir, exist_ok=True)
 
-                    cg = CommandGenerator()
-                    command = cg.dsm(filename=filename,
-                                     path_to_orb=PATH_TO_ORB_SLAM,
-                                     path_to_data=PATH_TO_TMP_DIR,
-                                     path_to_config=PATH_TO_CONFIG,
-                                     dataset=dataset,
-                                     resolution=resolution,
-                                     path_to_dsm=PATH_TO_DSM)
-                    print("Running DSM slam on {}!".format(filename))
-                    t1 = time.perf_counter()
-                    process = subprocess.Popen(command, shell=True)
-                    process.wait()
-                    t2 = time.perf_counter()
+                        cg = CommandGenerator()
+                        command = cg.dsm(filename=filename,
+                                         path_to_orb=PATH_TO_ORB_SLAM,
+                                         path_to_data=PATH_TO_TMP_DIR,
+                                         path_to_config=PATH_TO_CONFIG,
+                                         dataset=dataset,
+                                         resolution=resolution,
+                                         path_to_dsm=PATH_TO_DSM)
+                        print("Running DSM slam on {}!".format(filename))
+                        t1 = time.perf_counter()
+                        process = subprocess.Popen(command, shell=True)
+                        process.wait()
+                        t2 = time.perf_counter()
 
-                    # write the elapsed time to json file
-                    elapsed = t2 - t1
-                    jh = JsonHelper()
-                    jh.add_json(os.path.join(res_dsm_data_dir, "results.txt"), "processing_time", elapsed)
+                        # write the elapsed time to json file
+                        elapsed = t2 - t1
+                        jh = JsonHelper()
+                        jh.add_json(os.path.join(res_dsm_data_dir, "results.txt"), "processing_time", elapsed)
 
-                    # try to copy the output in the right place
-                    try:
-                        shutil.move("result.txt".format(filename),
-                                    os.path.join(res_dsm_data_dir, "estimated_data.txt"))
-                    except:
-                        raise ValueError("Something went wrong! Could not copy output file!")
-                    preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
-                                                                         "state_groundtruth_estimate0", "data.csv"),
-                                                est_filepath=os.path.join(res_dsm_data_dir, "estimated_data.txt"),
-                                                dataset_type=dataset,
-						outdir_data=res_dsm_data_dir)
-                    print("reading in the result dataframes...")
-                    preproc.create_est_pos_df()
-                    preproc.create_gt_pos_df()
-                    print("aligning the timestamps...")
-                    preproc.align_timestamps()
-                    print("transforming the coordinate system...")
-                    preproc.transform_coordinate_system(outdir=res_dsm_data_dir)
-                    preproc.save_est_pos_df("est_df_transformed.csv")
-                    print("evaluating...")
-                    position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
-                                              est_df=preproc.get_est_pos_df())
-                    position_eval.create_pos_dif_plots(outdir=res_dsm_img_dir)
-                    position_eval.calculate_diff(outdir_plot=res_dsm_img_dir, outdir_json=res_dsm_data_dir)
-
+                        # try to copy the output in the right place
+                        try:
+                            shutil.move("result.txt".format(filename),
+                                        os.path.join(res_dsm_data_dir, "estimated_data.txt"))
+                        except:
+                            raise ValueError("Something went wrong! Could not copy output file!")
+                        preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
+                                                                             "state_groundtruth_estimate0", "data.csv"),
+                                                    est_filepath=os.path.join(res_dsm_data_dir, "estimated_data.txt"),
+                                                    dataset_type=dataset,
+                                                    outdir_data=res_dsm_data_dir)
+                        print("reading in the result dataframes...")
+                        preproc.create_est_pos_df()
+                        preproc.create_gt_pos_df()
+                        print("aligning the timestamps...")
+                        preproc.align_timestamps()
+                        print("transforming the coordinate system...")
+                        preproc.transform_coordinate_system(outdir=res_dsm_data_dir)
+                        print("evaluating...")
+                        position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
+                                                  est_df=preproc.get_est_pos_df())
+                        position_eval.create_pos_dif_plots(outdir=res_dsm_img_dir)
+                        position_eval.calculate_diff(outdir_plot=res_dsm_img_dir, outdir_json=res_dsm_data_dir)
                     print("cleaning up the download directory...")
                     if resolution == 0.22:
                         dh.clean_download_dir()
