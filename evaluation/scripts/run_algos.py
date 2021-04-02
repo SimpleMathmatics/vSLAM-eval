@@ -106,7 +106,7 @@ if __name__ == "__main__":
                                                                          "state_groundtruth_estimate0", "data.csv"),
                                                 est_filepath=os.path.join(res_orb_data_dir, "estimated_data.txt"),
                                                 dataset_type=dataset,
-                                                outdir_data=res_orb_data_dir)
+						outdir_data=res_orb_data_dir)
                     print("reading in the result dataframes...")
                     preproc.create_est_pos_df()
                     preproc.create_gt_pos_df()
@@ -177,7 +177,6 @@ if __name__ == "__main__":
                                                   est_df=preproc.get_est_pos_df())
                         position_eval.create_pos_dif_plots(outdir=res_dsm_img_dir)
                         position_eval.calculate_diff(outdir_plot=res_dsm_img_dir, outdir_json=res_dsm_data_dir)
-
                     print("cleaning up the download directory...")
                     if resolution == 0.22:
                         dh.clean_download_dir()
