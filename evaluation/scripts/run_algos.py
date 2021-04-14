@@ -40,7 +40,7 @@ if __name__ == "__main__":
             if (resolution != 1) and (not eval_resolution):
                 continue
 
-            if resolution == 1:
+            if resolution == 14:
                 dh = DataHandler(filename=filename, url=url, dest=PATH_TO_TMP_DIR)
                 print("downloading {}...".format(filename))
                 dh.download()
