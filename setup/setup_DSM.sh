@@ -27,3 +27,12 @@ make -j4
 sudo make install	
 
 cd ..
+cd ..
+
+#################
+#  install dsm 
+#################
+git clone https://github.com/jzubizarreta/dsm.git
+cd dsm
+
+
