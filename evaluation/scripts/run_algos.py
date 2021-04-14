@@ -36,7 +36,7 @@ if __name__ == "__main__":
             print("skipping {}...".format(filename))
             continue
 
-        for resolution in [1, 0.8, 0.6, 0.4, 0.2]:
+        for resolution in [1, 0.8, 0.6, 0.4]:
             if (resolution != 1) and (not eval_resolution):
                 continue
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
                                                                          "state_groundtruth_estimate0", "data.csv"),
                                                 est_filepath=os.path.join(res_orb_data_dir, "estimated_data.txt"),
                                                 dataset_type=dataset,
-						outdir_data=res_orb_data_dir)
+			                                    outdir_data=res_orb_data_dir)
                     print("reading in the result dataframes...")
                     preproc.create_est_pos_df()
                     preproc.create_gt_pos_df()
@@ -183,8 +183,8 @@ if __name__ == "__main__":
 
                 except:
                     # if os.path.exists(PATH_TO_TMP_DIR):
-                      #  dh.clean_download_dir()
-		      #	pass
+                    #  dh.clean_download_dir()
+		            #	pass
                     raise ValueError("Could not run ORB-Slam")
 
             else:
