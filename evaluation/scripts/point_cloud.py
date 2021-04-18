@@ -97,7 +97,7 @@ class PointCloud:
 
 
 if __name__ == "__main__":
-    if False:
+    if True:
         # read in evaluated point cloud
         pq_eval = PointCloud()
         pq_eval.from_file("C:/Users/julia/Downloads/data_eval.ply")
@@ -110,11 +110,12 @@ if __name__ == "__main__":
         pq_gt = PointCloud()
         pq_gt.from_file('C:/Users/julia/Downloads/data.ply')
         pq_gt.generate_color_mat("white")
+        pq_gt.visualize_point_cloud()
 
         # dists = pq_eval.compare_to_gt(pq_gt)
         # np.save("../results/V101/DSM/data/distances_pointcloud.npy", dists)
-        pq_eval.add_point_cloud(second_point_cloud=pq_gt)
-        pq_eval.visualize_point_cloud()
+        # pq_eval.add_point_cloud(second_point_cloud=pq_gt)
+        # pq_eval.visualize_point_cloud()
     if False:
         dists_dsm = np.load("../results/V101/DSM/data/distances_pointcloud.npy")
         dists_orb = np.load("../results/V101/ORB/data/distances_pointcloud.npy")

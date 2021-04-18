@@ -1,12 +1,90 @@
 \chapter{Methods}
-
 \section{vSLAM Algorithms}
 
-\subsection{ORB-SLAM}
+	\subsection{ORB-SLAM}
 
-\section{Key Performance Indicators}
+	\subsection{DSM-SLAM}
 
-\section{Used Data}
+	\subsection{DSO-SLAM}
 
-\subsection{euroc}
+\section{Calculations}
 
+	\subsection{Trajectory Alignment}
+	
+	In order to compare the evaluated position of the camera at a given time with the ground truth of the 
+	position, the trajectories need to be aligned. This is because most SLAM Algorithms innitilize the origin
+	of their coordinate system with the camera position from the first frame. Whereas the ground truth of the 
+	trajectory uses a different origin. As a consequence, evaluated points $ \left\{{\widehat{p}_i}\right\}_{i=0}^{N-1} $ can not be 
+	compared to the ground truth points $ \left\{{p_i}\right\}_{i=0}^{N-1} $
+	Also, as described in the vSLAM Algorithms section,
+	
+	% input link of section here
+	
+	the minority of the existing vSLAM algorithms are recognizing the true scale of the coordinate system. For
+	those two reasons, the target is to find $S = \left\{R,t,s\right\}$, while $R$ being a rotation matrix, $t$ a translation vector
+	and $s$ a scaling factor, 
+	such that
+	
+	$$ S = \argmin_{S' = \left\{R', t', s' \right\}} \sum_{i = 0}^{N-1} \norm{p_i - s'R'\widehat{p}_i - t'}^2 $$ .
+	
+	In other words, the evaluated points are rotated, translated and scaled in a way, that the sum squared error over the point
+	distances is minimized. The upper expresssion is calculated by using the method of Umeyama \cite{ume}. 
+	
+	
+	
+
+\section{Datasets}
+
+	\subsection{EuRoC Dataset}
+
+	For the evaluation of the vSLAM Algorithms, the EuRoC dataset \cite{euroc} was used.
+	The dataset contains eleven video sequences, recorded with a micro aerial vehicle at 20 frames per second. 
+	For each Sequence, RGB images from two cameras exist. However, since the evaluation
+	focuses on monocular SLAM methods, only the left camera was considered. Also the available 
+	inertial and camera pose data was not taken in consideration. The first five sequences were recorded in 
+	the machine hall at ETH Zürich, and the other six were recorded in a room, that was provided 
+	with additional obsticals. For the latter six sequences, the groundtruth of the environment 
+	exists as a dense pointcloud, as can be seen in figure \ref{fig:pcgt}.
+
+	\fig{img/pointcloud_gt.png}{Pointcloud ground truth of sequence V1\_01\_easy visualized with python package pptk}{fig:pcgt}{0.7}
+
+	Finally the true position of the 
+	camera is known at a high frequency of over 200 points per second. 
+	An overview of the sequences is shown in table \ref{table:euroctable}.
+
+
+
+	\begin{table}
+	\caption{Overview of the sequences included in the EuRoC Dataset}
+	\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
+	\hline
+	Sequence Name& Duration in $s$ & Average Velocity in $ms^{-1}$ &Pointcloud available\\
+	\hline
+	MH\_01\_easy & 182 & 0.44 & No\\
+	MH\_02\_easy & 150 & 0.49 & No\\
+	MH\_03\_medium & 132 & 0.99 & No\\
+	MH\_04\_difficult & 99 & 0.93 & No\\
+	MH\_05\_difficult & 111 & 0.88 & No\\
+	V1\_01\_easy & 144 & 0.41 & Yes\\
+	V1\_02\_medium & 83.5 & 0.91 & Yes\\
+	V1\_03\_difficult & 105 & 0.75 & Yes\\
+	V2\_01\_easy & 112 & 0.33 & Yes\\
+	V2\_02\_medium & 115 & 0.72 & Yes\\
+	V2\_03\_difficult & 115 & 0.75 & Yes\\
+	\hline
+	\end{tabular}
+	\label{table:euroctable}
+	\end{table}
+	
+\section{Setup and Environment}
+
+	\subsection{Evaluation}
+	
+	The entire evaluation is run on a virtual machine. The host system is a lenovo yoga with eight GB of RAM and the basic model (8250U CPU @1.6 
+	GHz 1.80GHz) of an eight core i5. The operating system of the host machine is Windows 10 Home. The virtual
+	machine is given 5 GB of Ram and 4 cores. The operating system of the virtual machine is Ubuntu 18.04. All further setup information can be extracted 
+	from the github repository.
+
+	\subsection{Flight Path Planning}
+ 
+ 

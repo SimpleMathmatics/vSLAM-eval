@@ -40,7 +40,7 @@ if __name__ == "__main__":
             if (resolution != 1) and (not eval_resolution):
                 continue
 
-            if resolution == 14:
+            if resolution == 1:
                 dh = DataHandler(filename=filename, url=url, dest=PATH_TO_TMP_DIR)
                 print("downloading {}...".format(filename))
                 dh.download()
@@ -69,15 +69,15 @@ if __name__ == "__main__":
                         os.makedirs(res_orb_data_dir, exist_ok=True)
 
                     if resolution < 1:
-                        # downsize resulution
+                        # downsize resolution
                         image_helper = ImageHelper()
                         image_helper.resize_directory(os.path.join(PATH_TO_TMP_DIR,
                                                                    filename,
                                                                    "mav0",
                                                                    "cam0",
                                                                    "data"),
-                                                      int(752*resolution),
-                                                      int(480*resolution))
+                                                      int(752 * resolution),
+                                                      int(480 * resolution))
 
                     cg = CommandGenerator()
                     command = cg.orb(filename=filename,
@@ -99,14 +99,19 @@ if __name__ == "__main__":
 
                     # try to copy the output in the right place
                     try:
-                        shutil.move("CameraTrajectory.txt".format(filename), os.path.join(res_orb_data_dir, "estimated_data.txt"))
+                        shutil.move("CameraTrajectory.txt", os.path.join(res_orb_data_dir, "estimated_data.txt"))
+                        shutil.move("PointCloud.txt", os.path.join(res_orb_data_dir, "PointCloud.txt"))
+                        point_cloud_gt_path = os.path.join(PATH_TO_TMP_DIR, filename, "mav0", "pointcloud0", "data.ply")
+                        if os.path.exists(point_cloud_gt_path):
+                            shutil.move(point_cloud_gt_path, os.path.join(res_orb_data_dir, "PointCloud_gt.ply"))
+
                     except:
-                        raise ValueError("Something went wrong! Could not copy output file!")
+                        raise ValueError("Something went wrong! Could not copy output files!")
                     preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
                                                                          "state_groundtruth_estimate0", "data.csv"),
                                                 est_filepath=os.path.join(res_orb_data_dir, "estimated_data.txt"),
                                                 dataset_type=dataset,
-			                                    outdir_data=res_orb_data_dir)
+                                                outdir_data=res_orb_data_dir)
                     print("reading in the result dataframes...")
                     preproc.create_est_pos_df()
                     preproc.create_gt_pos_df()
@@ -117,8 +122,7 @@ if __name__ == "__main__":
                     print("evaluating...")
                     position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
                                               est_df=preproc.get_est_pos_df())
-                    position_eval.create_pos_dif_plots(outdir=res_orb_img_dir)
-                    position_eval.calculate_diff(outdir_plot=res_orb_img_dir, outdir_json=res_orb_data_dir)
+                    position_eval.calculate_diff(outdir_json=res_orb_data_dir)
 
                     ##################### DSM ###########################
                     if resolution == 1:
@@ -158,6 +162,11 @@ if __name__ == "__main__":
                         try:
                             shutil.move("result.txt".format(filename),
                                         os.path.join(res_dsm_data_dir, "estimated_data.txt"))
+                            shutil.move("PointCloud.ply", os.path.join(res_orb_data_dir, "PointCloud.ply"))
+                            point_cloud_gt_path = os.path.join(PATH_TO_TMP_DIR, filename, "mav0", "pointcloud0", "data.ply")
+                            if os.path.exists(point_cloud_gt_path):
+                                shutil.move(point_cloud_gt_path, os.path.join(res_orb_data_dir, "PointCloud_gt.ply"))
+
                         except:
                             raise ValueError("Something went wrong! Could not copy output file!")
                         preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
@@ -175,23 +184,16 @@ if __name__ == "__main__":
                         print("evaluating...")
                         position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
                                                   est_df=preproc.get_est_pos_df())
-                        position_eval.create_pos_dif_plots(outdir=res_dsm_img_dir)
-                        position_eval.calculate_diff(outdir_plot=res_dsm_img_dir, outdir_json=res_dsm_data_dir)
+                        position_eval.calculate_diff(outdir_json=res_dsm_data_dir)
                     print("cleaning up the download directory...")
-                    if resolution == 0.22:
+                    if (not eval_resolution) or (resolution == 0.4):
                         dh.clean_download_dir()
 
                 except:
-                    # if os.path.exists(PATH_TO_TMP_DIR):
-                    #  dh.clean_download_dir()
-		            #	pass
-                    raise ValueError("Could not run ORB-Slam")
+                    if os.path.exists(PATH_TO_TMP_DIR):
+                        dh.clean_download_dir()
+
+                    raise ValueError("Could not run Slam")
 
             else:
                 print("Slam algorithms can only be run on linux; skipping...")
-
-
-
-
-
-
