@@ -1,99 +1,10 @@
 import os
-from sys import platform
-import pandas as pd
-from data_handler import DataHandler
-from cli_command_gen import CommandGenerator
-import shutil
 from eval_preproc import FramePreprocessor
-from position_evaluator import Evaluator
-import subprocess
-import time
-from json_helper import JsonHelper
 
-# TODO: make script executable with params
-PATH_TO_METADATA = "../config/data_meta.csv"
-PATH_TO_ORB_SLAM = "~/ORB_SLAM3"
-PATH_TO_TMP_DIR = "../tmp"
-PATH_TO_RESULT_DIR = "../results"
-
-if __name__ == "__main__":
-    data_metadata = pd.read_csv(PATH_TO_METADATA, sep=";")
-
-    # itarate throu each dataset (=row in df) and run all algorithms
-    for i in [3]:
-        filename = data_metadata.iloc[i, 0]
-        url = data_metadata.iloc[i, 1]
-        dataset = data_metadata.iloc[i, 2]
-        run = data_metadata.iloc[i, 3]
-
-        ###############################
-        # get the data
-        ###############################
-        if not run:
-            print("skipping {}...".format(filename))
-            continue
-        # dh = DataHandler(filename=filename, url=url, dest=PATH_TO_TMP_DIR)
-        print("downloading {}...".format(filename))
-        # dh.download()
-        print("unzipping {}...".format(filename))
-        # dh.unzip()
-        print("deleting zip file...")
-        # dh.delete_zip()
-
-        ################################
-        # run algorithms
-        ################################
-        cg = CommandGenerator()
-        if platform == "linux" or platform == "linux2":
-            try:
-                ##################### ORB ###########################
-                res_orb_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "ORB")
-                res_orb_img_dir = os.path.join(res_orb_dir, "img")
-                res_orb_json_dir = os.path.join(res_orb_dir, "json")
-                res_orb_raw_dir = os.path.join(res_orb_dir, "raw_out")
-                if not os.path.exists(res_orb_dir):
-                    os.makedirs(res_orb_dir, exist_ok=True)
-                if not os.path.exists(res_orb_img_dir):
-                    os.makedirs(res_orb_img_dir, exist_ok=True)
-                if not os.path.exists(res_orb_raw_dir):
-                    os.makedirs(res_orb_raw_dir, exist_ok=True)
-                if not os.path.exists(res_orb_json_dir):
-                    os.makedirs(res_orb_json_dir, exist_ok=True)
-                command = cg.orb(filename=filename,
-                                 path_to_orb=PATH_TO_ORB_SLAM,
-                                 path_to_data=PATH_TO_TMP_DIR,
-                                 dataset=dataset)
-                t1 = time.perf_counter()
-                process = subprocess.Popen(command, shell=True)
-                process.wait()
-                t2 = time.perf_counter()
-
-                # write the elapsed time to json file
-                elapsed = t2 - t1
-                jh = JsonHelper()
-                jh.add_json(os.path.join(res_orb_json_dir, "result.txt"), "processing_time", elapsed)
-
-                preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
-                                                                     "state_groundtruth_estimate0", "data.csv"),
-                                            est_filepath=os.path.join(res_orb_raw_dir, "estimated_data.txt"),
-                                            dataset_type=dataset)
-                preproc.create_est_pos_df()
-                preproc.create_gt_pos_df()
-                print("aligning the timestamps...")
-                preproc.align_timestamps()
-                print("transforming the coordinate system...")
-                preproc.transform_coordinate_system()
-                print("evaluating...")
-                position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
-                                          est_df=preproc.get_est_pos_df())
-                position_eval.create_pos_dif_plots(outdir=res_orb_img_dir)
-                position_eval.calculate_diff(outdir_plot=res_orb_img_dir, outdir_json=res_orb_json_dir)
-                print("cleaning up the download directory...")
-#                dh.clean_download_dir()
-
-            except:
-                raise ValueError("Could not run ORB-Slam")
-
-        else:
-            print("Slam algorithms can only be run on linux; skipping...")
-
+path_to_data = os.path.join("C:/Users/julia/Downloads/result.txt")
+fp = FramePreprocessor(gt_filepath=None,
+                       est_filepath=path_to_data,
+                       dataset_type="euroc",
+                       outdir_data=None)
+fp.create_est_pos_df()
+print(fp.get_est_pos_df())
