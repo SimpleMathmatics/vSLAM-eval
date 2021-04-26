@@ -41,7 +41,7 @@ if __name__ == "__main__":
             if (resolution != 1) and (not eval_resolution):
                 continue
 
-            if resolution == 1:
+            if resolution == 1 and not os.path.exists(PATH_TO_TMP_DIR + "/" + filename):
                 dh = DataHandler(filename=filename, url=url, dest=PATH_TO_TMP_DIR)
                 print("downloading {}...".format(filename))
                 dh.download()
@@ -59,13 +59,10 @@ if __name__ == "__main__":
                     res_orb_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "ORB")
                     if resolution != 1:
                         res_orb_dir = os.path.join(PATH_TO_RESULT_DIR, filename + str(resolution), "ORB")
-                    res_orb_img_dir = os.path.join(res_orb_dir, "img")
                     res_orb_data_dir = os.path.join(res_orb_dir, "data")
 
                     if not os.path.exists(res_orb_dir):
                         os.makedirs(res_orb_dir, exist_ok=True)
-                    if not os.path.exists(res_orb_img_dir):
-                        os.makedirs(res_orb_img_dir, exist_ok=True)
                     if not os.path.exists(res_orb_data_dir):
                         os.makedirs(res_orb_data_dir, exist_ok=True)
 
@@ -101,7 +98,7 @@ if __name__ == "__main__":
 
                     # try to copy the output in the right place
                     try:
-                        shutil.move("CameraTrajectory.txt", os.path.join(res_orb_data_dir, "estimated_data.txt"))
+                        shutil.move("KeyFrameTrajectory.txt", os.path.join(res_orb_data_dir, "estimated_data.txt"))
                         shutil.move("PointCloud.txt", os.path.join(res_orb_data_dir, "PointCloud.txt"))
                         point_cloud_gt_path = os.path.join(PATH_TO_TMP_DIR, filename, "mav0", "pointcloud0", "data.ply")
                         if os.path.exists(point_cloud_gt_path):
@@ -119,23 +116,18 @@ if __name__ == "__main__":
                     preproc.create_gt_pos_df()
                     print("aligning the timestamps...")
                     preproc.align_timestamps()
+                    preproc.get_gt_pos_df().to_csv(os.path.join(res_orb_data_dir, "position_gt.csv"))
                     print("transforming the coordinate system...")
                     preproc.transform_coordinate_system(outdir=res_orb_data_dir)
-                    print("evaluating...")
-                    position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
-                                              est_df=preproc.get_est_pos_df())
-                    position_eval.calculate_diff(outdir_json=res_orb_data_dir)
+
 
                     ##################### DSO ###########################
                     res_dso_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "DSO")
                     if resolution == 1:
-                        res_dso_img_dir = os.path.join(res_dso_dir, "img")
                         res_dso_data_dir = os.path.join(res_dso_dir, "data")
 
                         if not os.path.exists(res_dso_dir):
                             os.makedirs(res_dso_dir, exist_ok=True)
-                        if not os.path.exists(res_dso_img_dir):
-                            os.makedirs(res_dso_img_dir, exist_ok=True)
                         if not os.path.exists(res_dso_data_dir):
                             os.makedirs(res_dso_data_dir, exist_ok=True)
 
@@ -161,9 +153,6 @@ if __name__ == "__main__":
                         try:
                             shutil.move("result.txt", os.path.join(res_dso_data_dir, "estimated_data.txt"))
                             shutil.move("pcl_data.pcd", os.path.join(res_dso_data_dir, "PointCloud.txt"))
-                            point_cloud_gt_path = os.path.join(PATH_TO_TMP_DIR, filename, "mav0", "pointcloud0", "data.ply")
-                            if os.path.exists(point_cloud_gt_path):
-                                shutil.move(point_cloud_gt_path, os.path.join(res_dso_data_dir, "PointCloud_gt.ply"))
 
                         except:
                             raise ValueError("Something went wrong! Could not copy output files!")
@@ -177,81 +166,18 @@ if __name__ == "__main__":
                         preproc.create_gt_pos_df()
                         print("aligning the timestamps...")
                         preproc.align_timestamps()
+                        preproc.get_gt_pos_df().to_csv(os.path.join(res_dso_data_dir, "position_gt.csv"))
                         print("transforming the coordinate system...")
                         preproc.transform_coordinate_system(outdir=res_dso_data_dir)
-                        print("evaluating...")
-                        position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
-                                                  est_df=preproc.get_est_pos_df())
-                        position_eval.calculate_diff(outdir_json=res_dso_data_dir)
 
-                    ##################### DSO SLIM ###########################
-                    res_dso_slim_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "DSO_SLIM")
-                    if resolution == 1:
-                        res_dso_slim_img_dir = os.path.join(res_dso_slim_dir, "img")
-                        res_dso_slim_data_dir = os.path.join(res_dso_slim_dir, "data")
 
-                        if not os.path.exists(res_dso_slim_dir):
-                            os.makedirs(res_dso_slim_dir, exist_ok=True)
-                        if not os.path.exists(res_dso_slim_img_dir):
-                            os.makedirs(res_dso_slim_img_dir, exist_ok=True)
-                        if not os.path.exists(res_dso_slim_data_dir):
-                            os.makedirs(res_dso_slim_data_dir, exist_ok=True)
-
-                        cg = CommandGenerator()
-                        command = cg.dso(filename=filename,
-                                         path_to_dso=PATH_TO_DSO_SLAM,
-                                         path_to_data=PATH_TO_TMP_DIR,
-                                         path_to_config=PATH_TO_CONFIG,
-                                         dataset=dataset,
-                                         resolution=resolution)
-                        print("Running DSO slam on {}!".format(filename))
-                        t1 = time.perf_counter()
-                        process = subprocess.Popen(command + " preset=3", shell=True)
-                        process.wait()
-                        t2 = time.perf_counter()
-
-                        # write the elapsed time to json file
-                        elapsed = t2 - t1
-                        jh = JsonHelper()
-                        jh.add_json(os.path.join(res_dso_slim_data_dir, "results.txt"), "processing_time", elapsed)
-
-                        # try to copy the output in the right place
-                        try:
-                            shutil.move("result.txt", os.path.join(res_dso_slim_data_dir, "estimated_data.txt"))
-                            shutil.move("pcl_data.pcd", os.path.join(res_dso_slim_data_dir, "PointCloud.txt"))
-                            point_cloud_gt_path = os.path.join(PATH_TO_TMP_DIR, filename, "mav0", "pointcloud0", "data.ply")
-                            if os.path.exists(point_cloud_gt_path):
-                                shutil.move(point_cloud_gt_path, os.path.join(res_dso_slim_data_dir, "PointCloud_gt.ply"))
-
-                        except:
-                            raise ValueError("Something went wrong! Could not copy output files!")
-                        preproc = FramePreprocessor(gt_filepath=os.path.join(PATH_TO_TMP_DIR, filename, "mav0",
-                                                                             "state_groundtruth_estimate0", "data.csv"),
-                                                    est_filepath=os.path.join(res_dso_slim_data_dir, "estimated_data.txt"),
-                                                    dataset_type=dataset,
-                                                    outdir_data=res_dso_slim_data_dir)
-                        print("reading in the result dataframes...")
-                        preproc.create_est_pos_df()
-                        preproc.create_gt_pos_df()
-                        print("aligning the timestamps...")
-                        preproc.align_timestamps()
-                        print("transforming the coordinate system...")
-                        preproc.transform_coordinate_system(outdir=res_dso_slim_data_dir)
-                        print("evaluating...")
-                        position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
-                                                  est_df=preproc.get_est_pos_df())
-                        position_eval.calculate_diff(outdir_json=res_dso_slim_data_dir)
-
-                    ##################### DSM ###########################
+                   ##################### DSM ###########################
                     if resolution == 1:
                         res_dsm_dir = os.path.join(PATH_TO_RESULT_DIR, filename, "DSM")
-                        res_dsm_img_dir = os.path.join(res_dsm_dir, "img")
                         res_dsm_data_dir = os.path.join(res_dsm_dir, "data")
 
                         if not os.path.exists(res_dsm_dir):
                             os.makedirs(res_dsm_dir, exist_ok=True)
-                        if not os.path.exists(res_dsm_img_dir):
-                            os.makedirs(res_dsm_img_dir, exist_ok=True)
                         if not os.path.exists(res_dsm_data_dir):
                             os.makedirs(res_dsm_data_dir, exist_ok=True)
 
@@ -276,12 +202,9 @@ if __name__ == "__main__":
 
                         # try to copy the output in the right place
                         try:
-                            shutil.move("result.txt".format(filename),
+                            shutil.move("result.txt",
                                         os.path.join(res_dsm_data_dir, "estimated_data.txt"))
-                            shutil.move("PointCloud.ply", os.path.join(res_orb_data_dir, "PointCloud.ply"))
-                            point_cloud_gt_path = os.path.join(PATH_TO_TMP_DIR, filename, "mav0", "pointcloud0", "data.ply")
-                            if os.path.exists(point_cloud_gt_path):
-                                shutil.move(point_cloud_gt_path, os.path.join(res_orb_data_dir, "PointCloud_gt.ply"))
+                            shutil.move("PointCloud.ply", os.path.join(res_dsm_data_dir, "PointCloud.ply"))
 
                         except:
                             raise ValueError("Something went wrong! Could not copy output file!")
@@ -295,22 +218,19 @@ if __name__ == "__main__":
                         preproc.create_gt_pos_df()
                         print("aligning the timestamps...")
                         preproc.align_timestamps()
+                        preproc.get_gt_pos_df().to_csv(os.path.join(res_dsm_data_dir, "position_gt.csv"))
                         print("transforming the coordinate system...")
                         preproc.transform_coordinate_system(outdir=res_dsm_data_dir)
-                        print("evaluating...")
-                        position_eval = Evaluator(gt_df=preproc.get_gt_pos_df(),
-                                                  est_df=preproc.get_est_pos_df())
-                        position_eval.calculate_diff(outdir_json=res_dsm_data_dir)
+
                     else:
                         print("Can't run DSM on lower resolution, so skipping...")
 
                     if (not eval_resolution) or (resolution == 0.4):
                         print("cleaning up the download directory...")
-                       # dh.clean_download_dir()
 
                 except:
                     if os.path.exists(PATH_TO_TMP_DIR):
-                        dh.clean_download_dir()
+                        pass
 
                     raise ValueError("Could not run Slam")
 
