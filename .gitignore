@@ -4,6 +4,7 @@ evaluation/tmp
 .ipynb_checkpoints
 .idea
 evaluation/scripts/__pycache__
+evaluation/results/
 
 # Fileendings
 .project

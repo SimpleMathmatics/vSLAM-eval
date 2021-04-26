@@ -4,6 +4,8 @@ from plyfile import PlyData
 import numpy as np
 from scipy.spatial.distance import cdist
 
+from evaluation.scripts.transformations import rotation_matrix
+
 
 class PointCloud:
     def __init__(self):
@@ -100,19 +102,23 @@ if __name__ == "__main__":
     if True:
         # read in evaluated point cloud
         pq_eval = PointCloud()
-        pq_eval.from_file("C:/Users/julia/Downloads/pcl_data.txt")
+        pq_eval.from_file("../results/V101/DSO/data/PointCloud.txt")
         pq_eval.generate_color_mat("red")
+        pq_eval.transform_points(trans=np.load("../results/V101/DSO/data/trans_vec.npy"),
+                                 rot_mat=np.load("../results/V101/DSO/data/rotation_matrix.npy"),
+                                 scale=np.load("../results/V101/DSO/data/scale.npy"))
 
         # read in ground truth point cloud
-        # pq_gt = PointCloud()
-        # pq_gt.from_file('C:/Users/julia/Downloads/data.ply')
-        # pq_gt.generate_color_mat("white")
+        pq_gt = PointCloud()
+        pq_gt.from_file('../results/V101/ORB/data/PointCloud_gt.ply')
+        pq_gt.generate_color_mat("white")
         # pq_gt.visualize_point_cloud()
 
         # dists = pq_eval.compare_to_gt(pq_gt)
         # np.save("../results/V101/DSM/data/distances_pointcloud.npy", dists)
-        # pq_eval.add_point_cloud(second_point_cloud=pq_gt)
+        pq_eval.add_point_cloud(second_point_cloud=pq_gt)
         pq_eval.visualize_point_cloud()
+
     if False:
         dists_dsm = np.load("../results/V101/DSM/data/distances_pointcloud.npy")
         dists_orb = np.load("../results/V101/ORB/data/distances_pointcloud.npy")

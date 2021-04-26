@@ -1,11 +1,34 @@
 \chapter{Methods}
 \section{vSLAM Algorithms}
-
+% hier erklrung von direct and feature methods
 	\subsection{ORB-SLAM}
+	
+	ORB SLAM is a feature based, state of the art slam method. The first version was published in 2015 \cite{orb}. 
+	Here, an overview of the functionality of ORB SLAM is provided. The Algorithms runs on three threats simultanously.
+	Each thread performes one of the following tasks: Tracking, Local Mapping and Loop Closing. An overview over the tasks can be found 
+	in figure \ref{fig:orb_fig}. The explaination of these system components are described in the following subsections.
+	
+	\fig{img/orb_slam_overview.png}{Overview of the system components extracted from \cite{orb}}{fig:orb_fig}{0.6}
+	
+	\subsubsection{Tracking}
+	
+	The tracking component determines the localization of the camera and decides, when a new keyframe is beeing inserted. 
+	
+	% keyframe noch beschreiben. 
+	
+	First, feature matching with the previous frame is performed, then the pose is optimized using motion only bundle adjustment. 
+	
+	% ? feature matching, bundle adjustment
+	
+	
+	
+
+	
 
 	\subsection{DSM-SLAM}
 
 	\subsection{DSO-SLAM}
+	
 
 \section{Calculations}
 
@@ -30,7 +53,21 @@
 	In other words, the evaluated points are rotated, translated and scaled in a way, that the sum squared error over the point
 	distances is minimized. The upper expresssion is calculated by using the method of Umeyama \cite{ume}. 
 	
+	Similar to principal component analysis, Umeyama uses the singular value decomposition of the covarianve 
+	matrix $\Sigma$ of $p$ and $\widehat{p}$. Thus, 
+	$\Sigma = UDV^T$ is yielded. Umeyama proves, that $R,t$ and $s$ can be calculated as followed: 
 	
+	$$ R = UWV^T $$
+	$$ s = \frac{1}{\sigma^2_p}\text{tr}\left(DW\right)$$
+	$$ t = \mu_{\widehat{p}} - sR\mu_p $$
+	
+	with 
+	
+	$$ W = \begin{cases}
+      I, & \text{if}\ \text{det}\left(U\right)\text{det}\left(V\right) =0 \\
+      \text{diag}\left(1,1,-1\right), & \text{otherwise}
+    \end{cases}$$
+	$\sigma_p$ beeing the standard deviation of $p$, $\mu$ the mean and $\text{tr}$ the trace of a matrix. 
 	
 
 \section{Datasets}
@@ -38,7 +75,8 @@
 	\subsection{EuRoC Dataset}
 
 	For the evaluation of the vSLAM Algorithms, the EuRoC dataset \cite{euroc} was used.
-	The dataset contains eleven video sequences, recorded with a micro aerial vehicle at 20 frames per second. 
+	The dataset contains eleven video sequences, recorded with a micro aerial vehicle at 20 frames per second.
+	The sequences have a resultion of 752x480 pixels.
 	For each Sequence, RGB images from two cameras exist. However, since the evaluation
 	focuses on monocular SLAM methods, only the left camera was considered. Also the available 
 	inertial and camera pose data was not taken in consideration. The first five sequences were recorded in 
