@@ -3,9 +3,7 @@ import pandas as pd
 from plyfile import PlyData
 import numpy as np
 from scipy.spatial.distance import cdist
-
-from evaluation.scripts.transformations import rotation_matrix
-
+import plotly.graph_objects as go
 
 class PointCloud:
     def __init__(self):
@@ -83,7 +81,7 @@ class PointCloud:
 
     def compare_to_gt(self, gt_point_cloud):
         # get 1000 random points from point cloud
-        random_indices = np.random.choice(self.n, size=1000, replace=False)
+        random_indices = np.random.choice(self.n, size=500, replace=True)
         eval_points = self.point_mat[random_indices, :]
         gt_points = gt_point_cloud.point_mat
         dists = []
@@ -94,19 +92,19 @@ class PointCloud:
             dists.append(min_dist)
             i += 1
             if i % 100 == 0:
-                print("Calculated {} percent of the distances".format(str(np.round(i/10))))
+                print("Calculated {} percent of the distances".format(str(np.round(i/5))))
         return np.array(dists)
 
 
 if __name__ == "__main__":
-    if True:
+    if False:
         # read in evaluated point cloud
         pq_eval = PointCloud()
-        pq_eval.from_file("../results/V101/DSO/data/PointCloud.txt")
+        pq_eval.from_file("../results/V101/ORB/data/PointCloud.txt")
         pq_eval.generate_color_mat("red")
-        pq_eval.transform_points(trans=np.load("../results/V101/DSO/data/trans_vec.npy"),
-                                 rot_mat=np.load("../results/V101/DSO/data/rotation_matrix.npy"),
-                                 scale=np.load("../results/V101/DSO/data/scale.npy"))
+        pq_eval.transform_points(trans=np.load("../results/V101/ORB/data/trans_vec.npy"),
+                                 rot_mat=np.load("../results/V101/ORB/data/rotation_matrix.npy"),
+                                 scale=np.load("../results/V101/ORB/data/scale.npy"))
 
         # read in ground truth point cloud
         pq_gt = PointCloud()
@@ -117,7 +115,7 @@ if __name__ == "__main__":
         # dists = pq_eval.compare_to_gt(pq_gt)
         # np.save("../results/V101/DSM/data/distances_pointcloud.npy", dists)
         pq_eval.add_point_cloud(second_point_cloud=pq_gt)
-        pq_eval.visualize_point_cloud()
+        pq_eval.visualize_point_cloud(point_size=0.003)
 
     if False:
         dists_dsm = np.load("../results/V101/DSM/data/distances_pointcloud.npy")
@@ -157,6 +155,99 @@ if __name__ == "__main__":
         # pq_eval.add_point_cloud(second_point_cloud=pq_gt)
         dists = pq_eval.compare_to_gt(pq_gt)
         np.save("../results/V101/ORB/data/distances_pointcloud.npy", dists)
+
+    if True:
+        import os
+        filenames = pd.read_csv("../config/data_meta.csv", sep=";").filename.tolist()
+
+        dataset_paths = [os.path.join("..", "results", filename) for filename in filenames]
+
+        result_paths_orb = [os.path.join(data_path, "ORB", "data") for data_path in dataset_paths]
+        result_paths_dsm = [os.path.join(data_path, "DSM", "data") for data_path in dataset_paths]
+        result_paths_dso = [os.path.join(data_path, "DSO", "data") for data_path in dataset_paths]
+
+        n_orb = []
+        n_dsm = []
+        n_dso = []
+
+        point_dist_orb = []
+        point_dist_dsm = []
+        point_dist_dso = []
+
+        all_dists_orb = []
+        all_dists_dsm = []
+        all_dists_dso = []
+
+        for i in range(len(result_paths_dso)):
+            # orb
+            pq_orb = PointCloud()
+            pq_orb.from_file(os.path.join(result_paths_orb[i], "PointCloud.txt"))
+            n_orb.append(pq_orb.n)
+            pq_orb.transform_points(
+                rot_mat=np.load(os.path.join(os.path.join(result_paths_orb[i], "rotation_matrix.npy"))),
+                trans=np.load(os.path.join(os.path.join(result_paths_orb[i], "trans_vec.npy"))),
+                scale=np.load(os.path.join(os.path.join(result_paths_orb[i], "scale.npy")))
+            )
+
+            # dsm
+            pq_dsm = PointCloud()
+            pq_dsm.from_file(os.path.join(result_paths_dsm[i], "PointCloud.ply"))
+            n_dsm.append(pq_dsm.n)
+            pq_dsm.transform_points(
+                rot_mat=np.load(os.path.join(os.path.join(result_paths_dsm[i], "rotation_matrix.npy"))),
+                trans=np.load(os.path.join(os.path.join(result_paths_dsm[i], "trans_vec.npy"))),
+                scale=np.load(os.path.join(os.path.join(result_paths_dsm[i], "scale.npy")))
+            )
+
+            # dso
+            pq_dso = PointCloud()
+            pq_dso.from_file(os.path.join(result_paths_dso[i], "PointCloud.txt"))
+            n_dso.append(pq_dso.n)
+
+            pq_dso.transform_points(
+                rot_mat=np.load(os.path.join(os.path.join(result_paths_dso[i], "rotation_matrix.npy"))),
+                trans=np.load(os.path.join(os.path.join(result_paths_dso[i], "trans_vec.npy"))),
+                scale=np.load(os.path.join(os.path.join(result_paths_dso[i], "scale.npy")))
+            )
+
+            if i not in range(5):
+                pq_gt = PointCloud()
+                pq_gt.from_file(os.path.join(result_paths_orb[i], "PointCloud_gt.ply"))
+
+                dists_orb = pq_orb.compare_to_gt(pq_gt)
+                dists_dsm = pq_dsm.compare_to_gt(pq_gt)
+                dists_dso = pq_dso.compare_to_gt(pq_gt)
+
+                point_dist_orb.append(np.mean(dists_orb))
+                point_dist_dsm.append(np.mean(dists_dsm))
+                point_dist_dso.append(np.mean(dists_dso))
+
+                all_dists_dso.append(dists_dso)
+                all_dists_dsm.append(dists_dsm)
+                all_dists_orb.append(dists_orb)
+
+        all_dists_dso = np.concatenate(all_dists_dso)
+        all_dists_dsm = np.concatenate(all_dists_dsm)
+        all_dists_orb = np.concatenate(all_dists_orb)
+        
+        plot = go.Figure(layout_yaxis_range=[0, 0.8])
+        plot.add_trace(go.Box(y=all_dists_orb, name="ORB"))
+        plot.add_trace(go.Box(y=all_dists_dsm, name="DSM"))
+        plot.add_trace(go.Box(y=all_dists_dso, name="DSO"))
+        plot.update_layout(showlegend=False)
+        plot.update_layout(
+            xaxis_title="Algorithm",
+            yaxis_title="Euclidean distance to true position"
+        )
+        plot.show()
+
+        print(point_dist_dso)
+        print(point_dist_dsm)
+        print(point_dist_orb)
+
+        print(n_dsm)
+        print(n_dso)
+        print(n_orb)
 
 
 

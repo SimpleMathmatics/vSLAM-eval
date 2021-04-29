@@ -2,6 +2,28 @@
 
 \section{Trajectory Evaluation}
 
+	\begin{figure}%
+    \centering
+    \subfloat[\centering MH01]{{\includegraphics[width=9cm]{img/traj_perf.png} }}%
+    \qquad
+    \subfloat[\centering V102]{{\includegraphics[width=9cm]{img/traj_dso.png} }}%
+	\qquad
+    \subfloat[\centering V203]{{\includegraphics[width=9cm]{img/traj_last.png} }}%
+    \caption{
+	Ground truth flight path and evaluated flight path of each algorithm after alignment with the method of Umeyama in the x and y axis. 
+	Left the sequence MH01, middle the sequence V102 and right the sequence V203 is displyed.
+	}%
+    \label{fig:flight_path}%
+	\end{figure}
+	
+	
+	
+	\fig{img/boxplot_dist.png}{Boxplot of all euclideans distances between the ground truth position of the keyframe and 
+	the evaluated position after alignment with the method of Umeyama. Outliers greater than 1.5 are not displayed.
+	}{fig:boxplot_traj}{0.8}
+	
+
+
 \section{Pointcloud Evaluation}
 
 	\begin{figure}%
@@ -14,8 +36,59 @@
     \caption{The groundtruth of the Pointcloud from Sequence V101 (white points) and the evaluated points by each algorithm (red points). 
 	The points in Figure (a) are four times as large for better visability (ORB-SLAM generates only few points). 
 	}%
-    \label{fig:example}%
+    \label{fig:pointcloud}%
 	\end{figure}
+	
+	
+	\begin{table}
+	\caption{Number and accuracy of evaluated points of each algorithm}
+	\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
+	\hline
+	Sequence Name& ORB & DSM & DSO \\
+	\hline
+	MH\_01\_easy & 8958 (/) & 675720 (/) & 361633 (/)\\
+	MH\_02\_easy & 8692 (/) & 700920 (/) & 343804 (/)\\
+	MH\_03\_medium & / (/) & 614264 (/) & 371752 (/)\\
+	MH\_04\_difficult & 7943 (/) & 495752 (/) & 208445 (/)\\
+	MH\_05\_difficult & 8373 (/) & 517712 (/) & 232415 (/)\\
+	V1\_01\_easy & 7075 (0.049) & 6108440 (0.066) & 374257 (0.066)\\
+	V1\_02\_medium & 6517 (0.042) & 648440 (0.187) & 366513 (1.458)\\
+	V1\_03\_difficult & / (/) & 775080 (0.092) & 448212 (0.459)\\
+	V2\_01\_easy & / (/) & 584552 (0.58) & 247905 (0.086)\\
+	V2\_02\_medium & / (/)& 733992 (0.078) & 490608 (0.104)\\
+	V2\_03\_difficult & / (/) & 921312 (0.645) & 465396 (0.677)\\
+	\hline
+	\end{tabular}
+	\label{table:pointcloud}
+	\end{table}
+	
+	
+	\fig{img/pq_dist.png}{Boxplot of the eucleadian distances between an evaluated point and the closest point of the ground truth point cloud.
+	For computational feasibility, for each sequence and algorithm, 500 points for evaluation are sampled randomly}{fig:boxplot_pq}{0.8}
+	
+	
 
 \section{Calculation Time}
+
+	\begin{table}
+	\caption{Computation Time (excluded time needed for initialization) of each Sequence and Algorithm}
+	\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
+	\hline
+	Sequence Name& Computation Time in $s$ ORB & Computation Time in $s$ DSM & Computation Time in $s$ DSO \\
+	\hline
+	MH\_01\_easy & 257 & 1098 & 749\\
+	MH\_02\_easy & 209 & 984 & 690\\
+	MH\_03\_medium & 198 & 1369 & 707\\
+	MH\_04\_difficult & 165 & 896 & 504\\
+	MH\_05\_difficult & 193 & 825 & 633\\
+	V1\_01\_easy & 253 & 1383 & 905\\
+	V1\_02\_medium & 150 & 1550 & 820\\
+	V1\_03\_difficult & 186 & 2262 & 1134\\
+	V2\_01\_easy & 187 & 1045 & 612\\
+	V2\_02\_medium & 162 & 1675 & 1522\\
+	V2\_03\_difficult & 143 & 1600 & 793\\
+	\hline
+	\end{tabular}
+	\label{table:comp_time}
+	\end{table}
 

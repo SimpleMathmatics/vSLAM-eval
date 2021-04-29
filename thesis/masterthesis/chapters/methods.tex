@@ -1,6 +1,26 @@
 \chapter{Methods}
 \section{vSLAM Algorithms}
-% hier erklrung von direct and feature methods
+
+	\subsection{Definitions}
+		\subsubsection{Keyframe}
+		
+		Most SLAM Algorithms make usage of so called keyframes, as these keyframe-based approaches have proven to be more accurate \cite{keyframe}. 
+		
+		\subsubsection{Direct and Feature based methods}
+		
+		\subsubsection{Group of Rigid Transformations in 3D}
+		
+		$\text{SE}(3)$ is the group of rigid transformations in 3D space \cite{se3}. Each Matrix $ T \in \mathbb{R}^{4x4}$ with 
+		
+		$$ T = \left[
+		\begin{array}{rrr}
+		R &  t \\  
+		0  & 1 \\ 
+		\end{array} \right]$$
+		
+		and $ R \in \mathbb{R}^{3x3}$ beiing a rotation matrix and $ t \in \mathbb{R}^{3}$ a translational vector, is an element of $\text{SE}(3)$.
+		
+
 	\subsection{ORB-SLAM}
 	
 	ORB SLAM is a feature based, state of the art slam method. The first version was published in 2015 \cite{orb}. 
@@ -12,13 +32,64 @@
 	
 	\subsubsection{Tracking}
 	
-	The tracking component determines the localization of the camera and decides, when a new keyframe is beeing inserted. 
+	The tracking component determines the localization of the camera and decides, when a new keyframe is beeing inserted.
+	As it is shown in figure \ref{fig:orb_fig}, the tracking is performed in four steps.
 	
-	% keyframe noch beschreiben. 
+	\begin{enumerate}
+	\item Feature Extracting 
 	
-	First, feature matching with the previous frame is performed, then the pose is optimized using motion only bundle adjustment. 
+	Features are extracted using Oriented FAST and Rotated BRIEF \cite{orb_feat}. This method starts by searching for 
+	FAST (Features from Accelerated and Segments Test). Herefor, for each pixel x in the image, a circle of 16 pixels around that pixels
+	is considered and checked if at least eight of these 16 pixels have major brightness differences. If so, the pixel x is considered as 
+	a keypoint, since it is likely to be an edge or corner. This is repeated again and again after downsizing the image up to a scale of eight. 
+	To extract features evenly distributed over the image, it is devided into a grid, trying to extract five features per cell. 
+	Extracting features this way, makes the algorithm more stable to scale invariance. 
+	Next the orientation of the extracted feature is calculated using a intensity centroid. 
+	Finally the features are converted into a binary vectors (ORB descriptor) using a modified version, which is more robust to rotation, of BRIEF descriptors (Binary robust independent elementary feature).
+	% wenn ich noch mehr brauch kann ich hier noch was adden. These ORB descriptors are then used for all feature matching tasks. 
 	
-	% ? feature matching, bundle adjustment
+	
+	
+	\item Initial Pose Estimation
+	
+	A constant velocity model is first run to predict to the camera pose. Then, the features of the last frame are searched. If no matches are found, 
+	a wider area around the last position is searched. 
+	
+	\item Track Local Map 
+	
+	
+	
+	
+	\item New Keyframe Decision 
+	\end{enumerate}
+	
+
+	
+	\subsubsection{Local Mapping}
+	
+	\subsubsection{Loop Closing}
+	
+	\subsubsection{Bundle Adjustment} \label{bund_a}
+	
+	The keyframe poses $T_i \in \text{SE}(3)$ and Map Points $X_j \in \mathbb{R}^{3}$ 
+	are optimized by minizing the reprojection error to the matched keypoints $x_{i,j} \in \mathbb{R}^{2}$.
+	The error is computed by the following term:
+	
+	$$ e_{i,j} = x_{i,j} - \pi_i\left(T_i, X_j\right) $$. 
+	$i$ is the respective Keyframe and j the index of the map Point. 
+	$\pi_i$ is a projection function, calculation a transformation 
+	to project all keypoints on mappoints by minimizing a cost function, that
+	can be found in \cite{ba}.
+	% citat anfang
+	In case of full BA
+	(used in the map initialization) we optimize
+	all points and keyframes, by the exception of the first
+	keyframe which remain fixed as the origin. In local BA
+	all points included in the local area
+	are optimized, while a subset of keyframes is fixed. In
+	pose optimization, or motion-only BA, all
+	points are fixed and only the camera pose is optimized.
+	% citat ende
 	
 	
 	
