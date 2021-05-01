@@ -1,5 +1,22 @@
 \chapter{Introduction}
 
+Multiple applications exist for the autonomous exploration and mapping tasks for drones;
+ such as search and rescue-, inspection- and surveillance operations \cite{tasks}.
+ The focus in this paper is on checking the feasabilty to perform an exploration and mapping task with a drone.
+An approach with a combination of a vSLAM (visual simulatanious localization
+and mapping) algorithm and a path planning algorithm is assessed. As the name 
+suggests, the aim of a SLAM algorithm is to create a map of its completly
+ unknown environment, while localizing itself within it only be using certain sensors.
+ This paper is limited to monocular vSLAM, meaning that the algorithm is only working
+ with a single RGB camera as sensor. This makes the drone very affordable, making it highly available for a larger user group.  
+The main part of this work is the evaluation of vSLAM algorithms in order to find the 
+most suitable method, that meets the requirements for this autonomous navigation task.
+ DSO (Direct Sparse Odometry) SLAM, DSM (Direct Sparce Mapping) SLAM and ORB (Oriented FAST and Rotated BRIEF)
+ SLAM were investigated regarding accuracy of the resulting trajectory estimation and pointcloud and computational speed. 
+Furthermore, a ROS (Roboter Operating System) setup to combine the suitable vSLAM algorithm with a flight
+ path planning algorithm within a simulated environment is introduced. Finally a recommendation
+ for future work regarding 
+the flight path algorithm is given.
 
 
 \section{Related Work}

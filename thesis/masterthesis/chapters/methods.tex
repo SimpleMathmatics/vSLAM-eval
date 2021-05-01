@@ -2,6 +2,9 @@
 \section{vSLAM Algorithms}
 
 	\subsection{Definitions}
+	
+		\subsubsection{Covisibility Graph}
+		
 		\subsubsection{Keyframe}
 		
 		Most SLAM Algorithms make usage of so called keyframes, as these keyframe-based approaches have proven to be more accurate \cite{keyframe}. 
@@ -66,8 +69,30 @@
 
 	
 	\subsubsection{Local Mapping}
+	\begin{enumerate}
+	\item{KeyFrame Insertion}
+	
+	At first we update the covisibility graph, adding a new node
+	for Ki and updating the edges resulting from the shared map
+	points with other keyframes. We then update the spanning tree
+	linking Ki with the keyframe with most points in common.
+	We then compute the bags of words representation of the
+	keyframe, that will help in the data association for triangulating new points.
+
+	
+	\item{Recent Map Points Culling}
+	\item{New Map Point Creation}
+	\item{Local Bundle Adjustment}
+	\item{Local Keyframe Culling}
+	\end{enumerate}
 	
 	\subsubsection{Loop Closing}
+	\begin{enumerate}
+	\item{Loop Candidates Detection}
+	\item{Similarity Transformation}
+	\item{Loop Fusion}
+	\item{ Essential Graph Optimization}
+	\end{enumerate}
 	
 	\subsubsection{Bundle Adjustment} \label{bund_a}
 	
@@ -101,7 +126,7 @@
 	\subsection{DSO-SLAM}
 	
 
-\section{Calculations}
+\section{Calculations} \label{calc}
 
 	\subsection{Trajectory Alignment}
 	
@@ -165,7 +190,7 @@
 
 	\begin{table}
 	\caption{Overview of the sequences included in the EuRoC Dataset}
-	\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
+	\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|}
 	\hline
 	Sequence Name& Duration in $s$ & Average Velocity in $ms^{-1}$ &Pointcloud available\\
 	\hline

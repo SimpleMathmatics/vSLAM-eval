@@ -1,6 +1,23 @@
 \chapter{Results}
 
+The three SLAM algorithms were evaluated regarding the computed trajectories, the resulting pointclouds and
+the computational complexity. 
+
 \section{Trajectory Evaluation}
+
+	In order to evaluate the quality of the trajectory computed by the algorithms, the trajectory firstly had to be 
+	transformed into the world reference of the ground truth data. This is because the algorithms usually initialize
+	the origin with the first (key)frame and the groundtruth data doesn't. Furthermore, monocular visual slam algorithms 
+	are generally not capable to extract the true scale. The alignment was performed using the method of Umeyama, described
+	in the \ref{comp} section. 
+	After alignment, as a first indicator for the accuracy of the computed trajectories, the trajectories were visually observed by 
+	plotting the true position and the evaluated position into a coordiante system. The x, y and z axis were observed seperatly. 
+	
+	% results here
+	
+	In figure \ref{fig:flight_path} the computed trajectories are displayed for sequences MH01, V102 and V203. 
+	
+	% and here 
 
 	\begin{figure}%
     \centering
@@ -10,17 +27,28 @@
 	\qquad
     \subfloat[\centering V203]{{\includegraphics[width=9cm]{img/traj_last.png} }}%
     \caption{
-	Ground truth flight path and evaluated flight path of each algorithm after alignment with the method of Umeyama in the x and y axis. 
+	Ground truth flight path and evaluated flight path of each algorithm after alignment with the method of Umeyama in the x and y axis in meters. 
 	Left the sequence MH01, middle the sequence V102 and right the sequence V203 is displyed.
 	}%
     \label{fig:flight_path}%
 	\end{figure}
 	
 	
+	Furthermore, the eucleadian distances between position of the keyframe and the true postion of the latter are computed. For a keyframe, 
+	the entry of the groundtruth data with the lowest distance in time to the time the keyframe was inserted is taken as reference point. 
+	This is justifiable, since the true position is sampled at a frequency of over 200 points per second. 
+	
+	In figure \ref{fig:boxplot_traj} a boxplot of all computed distances over all sequences is displayed. 
+	
+	% result here. 
+	
 	
 	\fig{img/boxplot_dist.png}{Boxplot of all euclideans distances between the ground truth position of the keyframe and 
 	the evaluated position after alignment with the method of Umeyama. Outliers greater than 1.5 are not displayed.
 	}{fig:boxplot_traj}{0.8}
+	
+	
+	\fig{img/pos_error.png}{The positional error over time in meters. The vertical lines indicate the beginning of a new sequence}{fig:pos_error}{1}
 	
 
 
