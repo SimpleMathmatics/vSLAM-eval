@@ -5,6 +5,9 @@
 	
 		\subsubsection{Covisibility Graph}
 		
+		updating the edges resulting from the shared map
+		points with other keyframes.
+		
 		\subsubsection{Keyframe}
 		
 		Most SLAM Algorithms make usage of so called keyframes, as these keyframe-based approaches have proven to be more accurate \cite{keyframe}. 
@@ -29,7 +32,8 @@
 	ORB SLAM is a feature based, state of the art slam method. The first version was published in 2015 \cite{orb}. 
 	Here, an overview of the functionality of ORB SLAM is provided. The Algorithms runs on three threats simultanously.
 	Each thread performes one of the following tasks: Tracking, Local Mapping and Loop Closing. An overview over the tasks can be found 
-	in figure \ref{fig:orb_fig}. The explaination of these system components are described in the following subsections.
+	in figure \ref{fig:orb_fig}. The explaination of these system components are described in the following subsections. 
+	A more detailed explaination can be found in the paper of Raul Mur-Artal et al \cite{orb}.
 	
 	\fig{img/orb_slam_overview.png}{Overview of the system components extracted from \cite{orb}}{fig:orb_fig}{0.6}
 	
@@ -60,41 +64,59 @@
 	
 	\item Track Local Map 
 	
+	When the camera pose is estimated, map point correspondences are searched in 
+	the local map, containing keyframes that contain the observed map points and
+	the keyframes from the covisibility graph. The pose is then corrected with all
+	matched mappoints. 
 	
+	% wenn ich noch mehr brauche, hier weitermachen.
 	
 	
 	\item New Keyframe Decision 
+	
+	To insert the current frame as a keyframe, the following conditions have to be met:
+	more than 20 frames have to be passed from the last relocalization or keyframe insertion (when not idle), 
+    the current frame tracks at least 50 points or less than 90 percent of the points of the keyframe in the local 
+    map with the most shard mappoints. 	
+	
+	
 	\end{enumerate}
 	
 
 	
 	\subsubsection{Local Mapping}
+	
+	Whenever a new Keyframe $K_i$ is inserted, the map is updated. 
+	
+	
 	\begin{enumerate}
 	\item{KeyFrame Insertion}
 	
-	At first we update the covisibility graph, adding a new node
-	for Ki and updating the edges resulting from the shared map
-	points with other keyframes. We then update the spanning tree
-	linking Ki with the keyframe with most points in common.
-	We then compute the bags of words representation of the
-	keyframe, that will help in the data association for triangulating new points.
+	The keyframe is inserted in the covisibility graph. Then the spanning tree
+	is updated using using the keyframe with the most common points with $K_i$.
+	Finally the keyframe is represented as a bag of words using the DBoW2 implementation. 
+	Therefor, the image is saved by the number of occurances of features found in a a predefined
+	vocabulary of features. When the vocabulary is created with images general enough, 
+	it can be used for most environments.
+	
+	% cite
 
 	
 	\item{Recent Map Points Culling}
+	
+	A mappoint is removed from the map, when it is found in more than 
+	25/% in the frames where it is predicted to be visible. Also, 
+	it must be observed from more than two keyframes if more than one keyframe 
+	has passed from map point creation. 
+	
 	\item{New Map Point Creation}
+	
+	A map point is created by calculating the triangulation of the connected
+	keyframes in the covisibility graph. For each map point, the 3D coordinate 
+	in the world coordinate system, its ORB descriptor, the viewing direction, 
+	the maximim and minimum distance at which the point can be observed is stored. 
+	
 	\item{Local Bundle Adjustment}
-	\item{Local Keyframe Culling}
-	\end{enumerate}
-	
-	\subsubsection{Loop Closing}
-	\begin{enumerate}
-	\item{Loop Candidates Detection}
-	\item{Similarity Transformation}
-	\item{Loop Fusion}
-	\item{ Essential Graph Optimization}
-	\end{enumerate}
-	
-	\subsubsection{Bundle Adjustment} \label{bund_a}
 	
 	The keyframe poses $T_i \in \text{SE}(3)$ and Map Points $X_j \in \mathbb{R}^{3}$ 
 	are optimized by minizing the reprojection error to the matched keypoints $x_{i,j} \in \mathbb{R}^{2}$.
@@ -115,6 +137,54 @@
 	pose optimization, or motion-only BA, all
 	points are fixed and only the camera pose is optimized.
 	% citat ende
+	At this point, a local BA is performed.
+	
+	\item{Local Keyframe Culling}
+	
+	With difference to other SLAM algorithm, ORB slam delets redundant 
+	keyframes, which decreases computational efforts, since computational
+	complexity grows with the number of keyframes. All keyframes are deleted, 
+	where at least 90 percest of the map points can be found in at least three other 
+	keyframes. 
+	
+	
+	\end{enumerate}
+	
+	\subsubsection{Loop Closing}
+	
+	The loop closing is computed based on the last inserted keyframe $K_i$. 
+	
+	\begin{enumerate}
+	\item{Loop Candidates Detection}
+	
+	First the similarity of $K_i$ to its neighbours in the covisibilty
+	graph is computed by using the bag of words representation and a 
+	loop candidate $K_l$ might be chosen. 
+	
+	\item{Similarity Transformation}
+	
+	In this step the transformation is computet, to map the map points
+	from $K_i$ on $K_l$. Since scale can drift, also the scale is computet
+	in addition to the rotation matrix and translation using the mothod of horn. 
+	
+	
+	\item{Loop Fusion}
+	
+	Here, duplicated map points are fused and the keyframe pose $T_\omega$ is corrected by the transformation
+	calculated in the previous step. All map points of $K_l$ are projected in $K_i$. 
+	All keyframes affected by the fusion will update the edjes (shared map points) in the 
+	covisibilty graph. 
+	
+	\item{ Essential Graph Optimization}
+	
+	Finally the loop closing error is distributed over the essential graph. 
+	
+	% essential graph hier noch beschreiben. 
+	
+	\end{enumerate}
+	
+	
+	
 	
 	
 	

@@ -14,10 +14,15 @@ most suitable method, that meets the requirements for this autonomous navigation
  DSO (Direct Sparse Odometry) SLAM, DSM (Direct Sparce Mapping) SLAM and ORB (Oriented FAST and Rotated BRIEF)
  SLAM were investigated regarding accuracy of the resulting trajectory estimation and pointcloud and computational speed. 
 Furthermore, a ROS (Roboter Operating System) setup to combine the suitable vSLAM algorithm with a flight
- path planning algorithm within a simulated environment is introduced. Finally a recommendation
- for future work regarding 
-the flight path algorithm is given.
+ path planning algorithm is introduced. This implementation includes a simulation of a drone equiped with a RGB camera within a 
+ simulated environment, making it easy to apply flight path planning algorithms without any hardware.
+ Finally a recommendation regarding the flight path algorithm is given for future work.
+ 
 
 
 \section{Related Work}
+
+While some papers exist, evaluating SLAM methods, most papers restrict on the trajectory. For applications involving 
+autononomous exploration it is also crucial, that these algorithms deliver a satisfactory dense and accure pointcloud. 
+The generated pointclouds have barely been studied. 
 
