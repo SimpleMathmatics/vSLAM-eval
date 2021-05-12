@@ -7,22 +7,18 @@ An approach with a combination of a vSLAM (visual simulatanious localization
 and mapping) algorithm and a path planning algorithm is assessed. As the name 
 suggests, the aim of a SLAM algorithm is to create a map of its completly
  unknown environment, while localizing itself within it only be using certain sensors.
- This paper is limited to monocular vSLAM, meaning that the algorithm is only working
- with a single RGB camera as sensor. This makes the drone very affordable, making it highly available for a larger user group.  
+ This paper is limited to evaluate monocular vSLAM algorithms, meaning that the algorithm is only working
+ with a single RGB camera as sensor. Therefore, since nowadays RGB cameras are either a standard on drones or can easily be upgraded, these drones are very affordable, making it highly available for a larger user group.  
 The main part of this work is the evaluation of vSLAM algorithms in order to find the 
 most suitable method, that meets the requirements for this autonomous navigation task.
  DSO (Direct Sparse Odometry) SLAM, DSM (Direct Sparce Mapping) SLAM and ORB (Oriented FAST and Rotated BRIEF)
  SLAM were investigated regarding accuracy of the resulting trajectory estimation and pointcloud and computational speed. 
 Furthermore, a ROS (Roboter Operating System) setup to combine the suitable vSLAM algorithm with a flight
- path planning algorithm is introduced. This implementation includes a simulation of a drone equiped with a RGB camera within a 
+ path planning algorithm is suggested. This implementation includes a simulation of a drone equiped with a RGB camera within a 
  simulated environment, making it easy to apply flight path planning algorithms without any hardware.
  Finally a recommendation regarding the flight path algorithm is given for future work.
  
 
 
-\section{Related Work}
 
-While some papers exist, evaluating SLAM methods, most papers restrict on the trajectory. For applications involving 
-autononomous exploration it is also crucial, that these algorithms deliver a satisfactory dense and accure pointcloud. 
-The generated pointclouds have barely been studied. 
 
