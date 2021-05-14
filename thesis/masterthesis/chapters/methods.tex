@@ -45,7 +45,11 @@ intensities and arrangement, such as corners (landmarks). These methods evaluate
 quantities. A main advantage of feature based methods is the rubostness over geometric distortions present in every-day-cameras \cite{dso}. 
 
 Of all existing vSLAM algorithms, this work considers DSO, DSM and ORB SLAM for the evaluation of beeing a suited candide for flying a drone autonomously. This desicion is based on 
-other research results in this area. % hier die gründe auflisten.
+other research results in this area. 
+
+% hier die gründe auflisten.
+% dso nur subsample der daten -> redundant
+
 
 In the following section, an overview over how the algorithms work is given for each method. However, in order to understand this section, it is crutial to clarify basic definitions 
 and vocabulary used in SLAM
@@ -54,7 +58,9 @@ and vocabulary used in SLAM
 		
 		\subsubsection{Keyframe}
 		
-		Most SLAM Algorithms make usage of so called keyframes, as these keyframe-based approaches have proven to be more accurate \cite{keyframe}. 
+		Most vSLAM Algorithms make usage of so called keyframes, as these keyframe-based approaches have proven to be more accurate \cite{keyframe}.
+		Keyframes are specific selected images of the input sequences or video streams. In most cases, the keyframes store all of the existing 
+		map points and all of the computations and optimizations are made, based on the keyframes and data stored within them. 
 	
 		\subsubsection{Covisibility Graph}
 		
@@ -75,6 +81,9 @@ and vocabulary used in SLAM
 		
 		\subsubsection{Pointcloud}
 		
+		When we speak of pointcloud, we simply mean a formation of points in the threedimensional space, though having
+		an x y and z coordinate. Later in the evaluation of the algorithms, to save these pointclouds, the PLY format has 
+		been chosen. 
 
 	\subsection{ORB-SLAM}
 	
@@ -232,9 +241,6 @@ and vocabulary used in SLAM
 	% essential graph hier noch beschreiben. 
 	
 	\end{enumerate}
-	
-
-	\subsection{DSM-SLAM}
 
 	\subsection{DSO-SLAM}
 	
@@ -242,8 +248,89 @@ and vocabulary used in SLAM
 	
 	\subsubsection{Model Overview}
 	
-	\subsubsection{Frame Managemant}
+	The model optimzes the photometric error over a window of recent frames. 
 	
-	\subsubsection{Point Managemant}
+	The camera is calibrated in two different ways. First a projection function is computed, considering the focal length and the pricipal point, 
+	in order to map a pixel point in the image on a 3D map point (and the other way around). Secondly, a photometric camera calibration is applied. 
+	This calibration accounts for camera specific non-linear response functions, that map scene irradiances on pixel intensities on the one hand and 
+	camera specific lens attenuations on the other hand. 
+	
+	The model relies on minimizing the photometric error. This error over all frames is given by
+	
+	$$E_{\text{photo}}:= \sum_{i \in \mathcal{F}} \sum_{p \in \mathcal{P}_i} \sum_{j \in \text{obs}\left(p\right)} E_{pj}$$,
+	
+	where $\mathcal{F}$ is the set of all frames, $\mathcal{P}_i$ the set of all pixel in frame $i$ and $\text{obs}\left(p\right)$
+	the set of indices of frames, where the point $p$ occurs. $E_{pj}$ on the other hand is the difference in pixel intensities, calculated 
+	by the huber norm, after mapping the pixels on each other and applying an additional affine brightness transfer function. Also, $E_{pj}$ does not 
+	include comparing the point $p$, but also computes the pixel intensitie difference of eight pixel neighbors of $p$, arranged in a spread pattern. 
+	
+	% hier ist noch viel zu schreiben
+	
+	\subsubsection{Visual Odometry Front-End}
+	
+	The front end determine the sets $\mathcal{F}$, $\mathcal{P}_i$ and $\text{obs}\left(p\right)$. Also it initializes all parameters required to calcualte the term \ref{eq:test}. 
+	Finally it decides, when to remove points, outliers and keyframes. Frame and point management are closer described in the following. 
+	
+	\begin{enumerate}
+	\item{Frame Managemant}
+	
+	If a new keyframe is created, all map points are mapped into it. In case the root mean squared error of the current frame is more than twice as high than the one before, 
+	direct image alignment is assumed to have failed and initialization is tried again. The algorithm tries, to always work with seven active keyframes. All computations are 
+	made in reference to those keyframes. 
+	
+	For creating a new keyframe, 5-10 frames per second are considered for creation. A keyframe must meet all of the following requirements: 
+	
+	\begin{enumerate}
+	\item{}
+	the field of view changes.
+	\item{}
+	Camera translation causes occlusions. % beschreibung occlusions
+	\item{}
+	Camera exposure time changes significantly. 
+	\end{enumerate}
+	
+	When deciding when to marginalize a keyframe, following roles are applied to the active keyframes $I_1$,...,$I_7$, with $I_1$ beeing the most recent: 
+	
+	\begin{enumerate}
+	\item{}
+	$I_1$ and $I_2$ are always kept
+	\item{}
+	keyframes, whos amount of points contained in $I_1$ is less then 5 percent are marginalized
+	\item{}
+	If still too many keyframes are active, the ones having the largest distance to $I_1$, or the worst distribuited in 3D space are removed. 
+	\end{enumerate}
+	
+	\item{Point Managemant}
+	
+	DSO always tries to keep 2000 active points in the map. The first step is select candidates points of the frame. To obtain equally 
+	distributed points, the image is split into blocks. In each block, the point with the largest gradient of pixel intensity is selected, if 
+	it is greater than a threshhold, which is computed by adding seven to the overall median of the gradients. This is repeated twice while 
+	decreasing the threshhold and doubling the block size, in order to also include points with weaker gradient. 
+	% vlt hier noch gradient erklären. 
+	
+	Then, the point candidates are tracked in subsequent frames by minimizing $E_{pj}$. From the best match, the depth value is initialized. 
+	
+	When old points are marginalized, candidate points are activated in a way that points in the active map are as evenly distribuited 
+	as possible. This is achieved by always selecting the point, which offers the largest distance to the next active point, after projecting
+	it into the last active keyframe. 
+	
+	Since outlier only consume unnecessary ressources, they are tried to be removed. For example, point for which $E_{pj}$ surpasses a threshold 
+	are removed permanently. 
+	
+	\end{enumerate}
+
+	\subsection{DSM-SLAM}
+	
+	Direct Sparce Mapping SLAM was released in april 2019.
+	
+	\subsubsection{Model Overview}
+	\subsubsection{Front-End}
+	
+	\begin{enumerate}
+	\item{Frame Tracking}
+	\item{New Keyframe Decision}
+	\item{New Map Point Tracking}
+	
+	\end{enumerate}
  
  
