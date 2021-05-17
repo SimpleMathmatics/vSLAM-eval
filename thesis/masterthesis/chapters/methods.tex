@@ -1,5 +1,4 @@
-\chapter{Methods}
-\section{vSLAM Algorithms}
+\chapter{Introduntion to vSLAM Algorithms}
 
 SLAM is one of the most emerging research topics in robotics \cite{slamintro}. It is applied in various applications, such as in augmented reality to estimate the camera pose,
 autonomous navigation and computer vision-based online 3D modeling \cite{evolved} \cite{dso}.
@@ -54,7 +53,7 @@ other research results in this area.
 In the following section, an overview over how the algorithms work is given for each method. However, in order to understand this section, it is crutial to clarify basic definitions 
 and vocabulary used in SLAM
 
-	\subsection{Definitions}
+	\section{Definitions}
 		
 		\subsubsection{Keyframe}
 		
@@ -85,7 +84,7 @@ and vocabulary used in SLAM
 		an x y and z coordinate. Later in the evaluation of the algorithms, to save these pointclouds, the PLY format has 
 		been chosen. 
 
-	\subsection{ORB-SLAM}
+	\section{ORB-SLAM}
 	
 	ORB SLAM is a feature based, state of the art slam method. The first version was published in 2015 \cite{orb}. 
 	Here, an overview of the functionality of ORB SLAM is provided. The Algorithms runs on three threats simultanously.
@@ -95,7 +94,7 @@ and vocabulary used in SLAM
 	
 	\fig{img/orb_slam_overview.png}{Overview of the system components extracted from \cite{orb}}{fig:orb_fig}{0.6}
 	
-	\subsubsection{Tracking}
+	\subsection{Tracking}
 	
 	The tracking component determines the localization of the camera and decides, when a new keyframe is beeing inserted.
 	As it is shown in figure \ref{fig:orb_fig}, the tracking is performed in four steps.
@@ -142,7 +141,7 @@ and vocabulary used in SLAM
 	
 
 	
-	\subsubsection{Local Mapping}
+	\subsection{Local Mapping}
 	
 	Whenever a new Keyframe $K_i$ is inserted, the map is updated. 
 	
@@ -209,7 +208,7 @@ and vocabulary used in SLAM
 	
 	\end{enumerate}
 	
-	\subsubsection{Loop Closing}
+	\subsection{Loop Closing}
 	
 	The loop closing is computed based on the last inserted keyframe $K_i$. 
 	
@@ -242,11 +241,11 @@ and vocabulary used in SLAM
 	
 	\end{enumerate}
 
-	\subsection{DSO-SLAM}
+	\section{DSO-SLAM}
 	
 	Direct Sparse Odometry was developed in 2016 by the Technische Universität München. % hier noch paar sätze dazu
 	
-	\subsubsection{Model Overview}
+	\subsection{Model Overview}\label{samemodel}
 	
 	The model optimzes the photometric error over a window of recent frames. 
 	
@@ -266,7 +265,7 @@ and vocabulary used in SLAM
 	
 	% hier ist noch viel zu schreiben
 	
-	\subsubsection{Visual Odometry Front-End}
+	\subsection{Visual Odometry Front-End}
 	
 	The front end determine the sets $\mathcal{F}$, $\mathcal{P}_i$ and $\text{obs}\left(p\right)$. Also it initializes all parameters required to calcualte the term \ref{eq:test}. 
 	Finally it decides, when to remove points, outliers and keyframes. Frame and point management are closer described in the following. 
@@ -319,18 +318,65 @@ and vocabulary used in SLAM
 	
 	\end{enumerate}
 
-	\subsection{DSM-SLAM}
+	\section{DSM-SLAM}
 	
-	Direct Sparce Mapping SLAM was released in april 2019.
+	Direct Sparce Mapping SLAM was released in april 2019 and works similar to DSO slam but claims to be more robust when revisiting 
+	areas. The algorithm can be seperated into a tracking 
+	front-end and an optimization back-end that run on parallel threads. 
 	
-	\subsubsection{Model Overview}
-	\subsubsection{Front-End}
+	\subsection{Model Overview}
+	
+		DSM uses the same model as DSO. The model is described in section \ref{samemodel}.
+	
+	\subsection{Front-End}
+	
+	The front-end, however, differs from DSO. While DSO cannot reuse points that have one beein marginalized, DSM suggests a method 
+	to activate and inactivate keyframes and points to its needs. 
+	
+	\subsubsection{keyframe and mappoint selection}
+	
+	When selecting keyframes and mappoints, two criteria play a role: the temporal and covisibility criteria. 
+	The temporal parts regards $N_t$ keyframes as recent sliding window approach, just like DSO. With similar 
+	critirias for keyframe selection as DSO, whenever a new keyframe is inserted, anotherone is removed (from the temporal part).
+
+	In order to regard reobserved points, DSM also considers $N_c$ covisibil keyframes to fill the latest keyframe $I_0$ with map points, favouring 
+	map points in depleted areas. This is achived by the following steps: 
 	
 	\begin{enumerate}
-	\item{Frame Tracking}
-	\item{New Keyframe Decision}
-	\item{New Map Point Tracking}
+	\item{Identify depleted areas}
+	
+	All map points from the temporal part are mapped into the latest keyframe. For every pixel, the eucleadian distance to the closest map point 
+	is computed. Obvously, large distances suggest depleted areas.
+	
+	\item{covisibil Keyframe Selection}
+	
+	Select the keyframe within the old keyframes with the most map points in the above selected depleted area. Map points, where the viewing angle 
+	lies too far from the latest keyframe are removed from the local map. 
+	This can be determined from the pose $T_i \in \text{SE}(3)$ that is saved for each keyframe $I_i$. 
+	
+	\item{Update distance map}
+	
+	Update the distance map, calculated in step 2, with the new selected keyframe. 
+	
+	\item{iterate}
+	
+	Iterate until $N_c$ keyframes are selected for the covisibility part. 
 	
 	\end{enumerate}
+	
+	The entire keyframe and mappoint selection is displayd in figure \ref{fig:dsm_fig}. In this case, $N_t$ is equal to four and $N_c$ is equal to three.
+	
+	\fig{img/dsmKeyframes.png}{Keyframe and Point Selection of DSM. Source: \cite{dsm}}{fig:dsm_fig}{0.7}
+	
+	\subsubsection{Frame Tracking, New Keyframe desicion, New Map Point Tracking}
+	
+	Frame Tracking, New Keyframe desicion and New Map Point Tracking work similar to DSO slam. The main idea is always to manipulate the local map 
+	by minimizing the photometric error displayed in equation \ref{eq:test}. 
+
+	However, unlike DSO SLAM, in each frame, the local map 
+	consisting of the $N_t + N_c$ keyframes (referenced from the latest keyframe) and contained map points is projected into the frame. 
+	Obviously, this also brings the difference compared to DSO slam, that keyframes and map points are not permanently culled from the 
+	map, and may be reactivated once the keyframe appears in the covisibilty graph. Also, the management of outliers is similar to DSO-SLAM, 
+	Trying to remove outliers as early as possible, in order to save computational resources. 
  
  
