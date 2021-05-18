@@ -11,11 +11,15 @@ the computational complexity.
 	are generally not capable to extract the true scale. The alignment was performed using the method of Umeyama, described
 	in the \ref{comp} section. 
 	After alignment, as a first indicator for the accuracy of the computed trajectories, the trajectories were visually observed by 
-	plotting the true position and the evaluated position into a coordiante system. The x, y and z axis were observed seperatly. 
+	plotting the true position and the evaluated position into a coordiante system. The x, y and z axis were observed seperatly. This method 
+    for comparing the trajectories is described in detail in section \ref{detail}. 	
 	
-	% results here
+	In figure \ref{fig:flight_path} the computed trajectories are plotted against the groundtruth for sequences MH01, V102 and V203 considering only the 
+	x and y coordinate. These sequences 
+	were selected, because they represent the results of the visual analalysis well. In the first sequence, MH01, all algorithms showed excellent results. 
+	One reason for this could be, that in the first sequence, the camera only does very gentel movements, moving at an average speed of $0.41 ms^{-1}$. 
 	
-	In figure \ref{fig:flight_path} the computed trajectories are displayed for sequences MH01, V102 and V203. 
+	The second image shows the sequence V102. Here
 	
 	% and here 
 
@@ -54,19 +58,49 @@ the computational complexity.
 
 \section{Pointcloud Evaluation}
 
+For the evaluation of the computed point clouds, these point clouds were first visually observed, as described in section \ref{sec}. 
+Figure \ref{fig:pointcloud} shows the evaluated point clouds aligned with the ground truth point cloud for sequence V101. This is a sequence, 
+where the tracking of the trajectory was successfull for all three algorithms, thus, the errors of the resulting point clouds can not 
+be a result of errors in alignment. 
+
+What becomes clear at first glance is, that as mentioned, ORB generates only few points, since only found keypoints are mapped in feature based methods.
+ To give these  points better visibilty, the point size was doubled in the ORB image. DSM and DSO slam generate point clouds with significant higher 
+ density, where all structures of the room are clearly visible at first glance. 
+ 
+ However, the advantace of ORB-SLAM over the other two direct methods 
+ is the recognizing of clear features in terms of strucural differences in the scenes. Though, DSO and DSM also regard the differences in pixel intensities
+ ORB, as described in section \ref{refasdf}, detects the features on different scale levels and ensures, that the regarded features are in fact significant. 
+ This also became clear when observing the point cloud. All significant features, and therefore important features for autonomous navigation, were successfully 
+ marked with a computed point. For example, this can be seen at the leiter?? in image three of figure \ref{fig:pointcloud}, where all sprossen contain at least 
+ on point. 
+
+ 
+ After closely observing the point clouds, it became clear, that the point clouds of DSO, often times generate point clouds, where multiple layers of 
+ points were falsly generated, where all points had the same clear distance to the ground truth point cloud. This may be a result of working of DSO slam, 
+ where keyframes, that are marginalized, are removed permanently. When revisiting areas, the points are again generated. This means that all errors made
+ in the sequence accumulate and when an area is revisited, significant errors in the point cloud can be made. This can be seen when looking at the 
+ third image closely. When looking at the matraccess in the middle of the room, the accumulated error expresses itself by points hovering in the air 
+ in a clear plane. 
+ 
+ 
+
 	\begin{figure}%
     \centering
-    \subfloat[\centering ORB]{{\includegraphics[width=4cm]{img/pointcloud_orb} }}%
+    \subfloat[\centering ORB]{{\includegraphics[width=5cm]{img/pointcloud_orb} }}%
     \qquad
-    \subfloat[\centering DSM]{{\includegraphics[width=4cm]{img/pointcloud_dsm} }}%
+    \subfloat[\centering DSM]{{\includegraphics[width=5cm]{img/pointcloud_dsm} }}%
 	\qquad
-    \subfloat[\centering DSO]{{\includegraphics[width=4cm]{img/pointcloud_dso} }}%
+    \subfloat[\centering DSO]{{\includegraphics[width=5cm]{img/pointcloud_dso} }}%
     \caption{The groundtruth of the Pointcloud from Sequence V101 (white points) and the evaluated points by each algorithm (red points). 
-	The points in Figure (a) are four times as large for better visability (ORB-SLAM generates only few points). 
+	The points in Figure (a) are wtice as large for better visability (ORB-SLAM generates only few points). 
 	}%
     \label{fig:pointcloud}%
 	\end{figure}
 	
+	
+	The density can also be expressed by numbers. The significant difference of the numbers of points can be seen in table \ref{table:pointcloud}. While 
+	ORB slam only generates close to 10000 points in the sequences DSM slam generates more than 500000 points in most sequences and DSO more than 200000 
+	in most sequences. 
 	
 	\begin{table}
 	\caption{Number and accuracy of evaluated points of each algorithm}
