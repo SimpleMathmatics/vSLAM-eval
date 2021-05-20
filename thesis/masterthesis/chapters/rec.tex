@@ -1,21 +1,35 @@
-\chapter{recommendation for further work}
-\section{Simlated environment}
+\chapter{recommendation for further work regarding the full system}
 
-	Furthemore, a framework to test and build an entire automated system is suggested. This framework includes a simulated 
+	Furthemore, a framework to test and build an entire automated system is suggested. This framework includes a 
 	simulated envorinment, that realisicly makes it possible, to navigate a drone within an simulated environment. The environment 
-	is based on the Roboter Operating System (ROS) and for the simulations the tum\_simulation ros package, developed by the Technische Universität 
-	München, was resorted to. 
+	is based on the Roboter Operating System (ROS) and is completely simulated. 
 	
+	The basic idea of the framework can be seen in figure \ref{fig:autsys}. The main parts of the automated exploration system are the SLAM Algorithm
+	and the flight path planning algorithm, that work simultaniously. The general concept is that each of the algorithms takes the output of the other as 
+	input. 
 	
+	In the folling section the ROS framework is proposed and described in detail. 
+	
+	\fig{img/aut_system.png}{Automated SLAM system}{fig:autsys}{0.8}
+
+
+\section{ROS framework}
+
+		
 	ROS, as the name suggests, is a framework for a software infrastracture within a robot. With the right drivers installed, 
 	it can access and use the robots hardware and serves as a messenger system between robot components. Ros packages make it easy to 
 	reuse important functionalities. Gazebo on the other hand is a 3D dynamic simulator for robotics. It can accurately and efficiently simulate robots regarding
 	their physics. 
 	
+	\fig{img/aut_ros.png}{Overview over the suggested ROS framework}{fig:autros}{0.95}
+	
+	% Sprachenunabhängig
+	
+	\subsection{TUM Simulation Node}
 	
 	Thus, with the tum\_simulation package you can navigate an AR.drone 1.0 and 2.0 in different worlds created with a gazebo node. This drone is eqipped with a bottom camera 
 	and a frot camera. The cameras each log their output to a ros topic. Additionally, message time stamps, the height sensor output, 
-	battery percentage, position, rotation
+	battery percentage, rotation
 	velocity and accelaration are also logged to rostopics. While the drone can also be navigated using a playstation 3 controller, as shown in figure 
 	\ref{fig:tumsim}, showing a section of the tum\_simulation package content structure, 
 	for an automated system, the drone should rather be addressed using the command line interface. For example 
@@ -27,21 +41,114 @@
 	
 	\fig{img/tum_sim.png}{tum simulator setup. Source: $http://wiki.ros.org/tum_simulator$}{fig:tumsim}{0.8}
 	
-	By accessing the camera output of the drone via rostopics, SLAM algorithms can be applied on the generated images. Some SLAM-Algorithms, 
-	such as an modified version of the ORB-SLAM-Algorithm (\href{https://github.com/rayvburn/ORB-SLAM2_ROS}{ORB\_SLAM2\_ROS}), publish the created pointcloud again in an own rostopic.
-	The fight path planning algorithm on the other hand takes the publishes pointcloud as input and navigates the drone using the command line interface. 
-	
-	This circle of a fully automated SLAM system is shown in figure \ref{fig:autsys}. For the initialiazation of the process, the manual step of flying
-	the drone may be required. This is because the ORB-SLAM system needs a translational movement to initialize the algorithm. Though, in most cases, 
-	a normal take off will be sufficient. 
-	
-	\fig{img/aut_system.png}{Automated SLAM system}{fig:autsys}{0.8}
 	
 	In figure \cite{fig:simfigs} the simulated environment with gazebo can be found in figure a. Here, the drone (in black) is flying in front of the building. 
 	The output of the front camera is shown in figure b. Therefore, the output calibration data of the front camera, such as the focal lengt, 
 	can be found in an own rostopic. In figure c, the ORB-SLAM-Algorithm was applied to the output of the front camera. Green dots represent the 
 	finding of an ORB-feature. 
 	
+	\subsection{ORB-SLAM Node}
+	
+	The ORB-SLAM algorithm runs in 
+	
+	\subsubsection{Input}
+	\subsubsection{Output}
+	
+	\subsection{Position Estimation Node}
+	
+	The position estimation node appriximates the position of the drone based on the valocity on the drone and the latest position. ORB-SLAM, used 
+	in the visual monocular mode is as mentioned not able to extract the true scale of the environment. Estimating the true position enables us 
+	to also scale the computed point cloud by the ORB SLAM node to its true scale. This method should be done in the initialization process, by 
+	only doing translational movements with the drone, such as a takeoff and a short foreward movement. No rotations should be performed with the drone 
+	since the drones navigation data, such as the veloxity, uses the bodyframe as reference frame. Thus doing rotations would result in an incorrect 
+	estimation of the position. Folling an overview over the input, output and computational functionality of the node. 
+	
+	\subsubsection{Input}
+	
+	The node subscribes to the following topics:
+	
+	\begin{enumerate}
+	\item{/ardrone/navdata}
+	
+	This topic is beeing published with the tum simulation node described in item \ref{asdfasdf} and is a messenger class developed for the ardrone.
+	This node only uses the velocity vectors
+	$v_x \in \mathbb{R}, v_y \in \mathbb{R}, v_z \in \mathbb{R}$ given in the unit $mms^{-1}$. 
+	
+	\item{/drone\_position\_init}
+	
+	The drone also subscribes to the /drone\_position\_init topic, published by itself. This topic includes messenges of the class PointStamped. 
+	This class includes the x, y and z coordinate of the point itself, and a timestamp. The node also needs the information from this topic, 
+	to read in the last position and update it based on the velocity, by doing the computations explained in the following section. The x y and z 
+	coordinates are transformed to meter. 
+	\end{enumerate}
+	
+	\subsubsection{Output}
+	
+	The node publishes to the following topics:
+	
+	\begin{enumerate}
+	\item{/drone\_position\_init}
+	
+	This topic is explained in the upper section. The updated points are published in this topic
+	
+	\end{enumerate}
+	
+	\subsubsection{computation}
+	
+	As mentioned, the computation is made based on the current velocity $$v_i = \begin{pmatrix} v_{i,x} \\ v_{i,y} \\ v_{i,z} \end{pmatrix} \in \mathbb{R}^3$$ and the 
+	latest position point $$x_{i-1} = \begin{pmatrix} x_{i-1,x} \\ x_{i-1,y} \\ x_{i-1, z} \end{pmatrix} \in \mathbb{R}^3$$. Also, the timedifference 
+	in seconds to the last point is extracted, which is easy, since all onject from the class PointStamped can be timestamped. The difference is given by 
+	$\Delta t_i =  t_i - t_{i-1}$. The updated position is the yielded by
+	
+	$$x_{i} = x_{i-1} + \frac{\Delta t_i * v_i}{1000} $$. 
+	
+	Dividing by 1000 yields the unit meter. 
+	
+	This recursive methodoly is shown in figure \ref{fig:positionfinding}
+	
+	\fig{img/pos_estimation.png}{Calculation method for estimation the position in the initialization porcess in order to find the 
+	true scale.}{fig:positionfinding}{0.8}
+	
+	The implementation is easily deployed and the update function, that is running in the main loop can be seen in listing \ref{lst:posupdate}. 
+	
+	\begin{lstlisting}[language=python, caption=Main part of the position estimation node, label=lst:posupdate]
+	def update_position(self):
+        # get velocity in x, y and z direction
+        x_vel = self.navdata.vz
+        y_vel = self.navdata.vy
+        z_vel = self.navdata.vz
+
+        if x_vel is not None and y_vel is not None and z_vel is not None:
+			# get time difference
+            curr_time = rospy.Time.now()
+            time_diff = (curr_time - self.position.header.stamp).to_sec()
+			
+			# create the new point
+            new_point = PointStamped()
+            new_point.header.stamp = curr_time
+            new_point.header.frame_id = "init"
+			
+			# update positions
+            new_point.point.x = self.position.point.x + time_diff * x_vel / 1000
+            new_point.point.y = self.position.point.y + time_diff * y_vel / 1000
+            new_point.point.z = self.position.point.z + time_diff * z_vel / 1000
+			
+			# publish
+            self.position_publisher.publish(new_point)
+            rospy.sleep(0.1)
+	\end{lstlisting}
+	
+	\subsection{Scale Recognition Node}
+	
+	\subsubsection{Input}
+	\subsubsection{Output}
+	
+	\subsection{Fight Path Planning Node}
+	
+	\subsubsection{Input}
+	\subsubsection{Output}
+	
+	\section{Current setup}
 	
 	\begin{figure}%
     \centering
@@ -56,8 +163,6 @@
 	}%
     \label{fig:simfigs}%
 	\end{figure}
-	
-	\subsection{Current setup}
 	
 	Currently the framework is set up in an environment provided by theconstructsim.com. This platform is enabling ROS-developers to program in preconfigured
 	ROS-environments. The environment comes with the possibility to open terminal consols, a file management system, a simulator, that automatically 
@@ -78,5 +183,6 @@ rostopic pub -1 /ardrone/takeoff std_msgs/Empty
 	In listing \ref{lst:sim_cmd} the commands for launching the gazebo simulation, ORB-SLAM and the drone are displayed. After launching thouse 
 	applications, only the path planning algorithm based on the resulting point cloud is missing. However, multiple solutions for such algorithms 
 	exist \cite{path}, appying it on the system is not part of this paper and will be done in further research. 
-	
-\section{Flight Path Planning algorithm}
+
+	\subsection{Known Issues}
+	% andere umgebung, boden ist nicht gut. 
