@@ -61,7 +61,12 @@
 	to also scale the computed point cloud by the ORB SLAM node to its true scale. This method should be done in the initialization process, by 
 	only doing translational movements with the drone, such as a takeoff and a short foreward movement. No rotations should be performed with the drone 
 	since the drones navigation data, such as the veloxity, uses the bodyframe as reference frame. Thus doing rotations would result in an incorrect 
-	estimation of the position. Folling an overview over the input, output and computational functionality of the node. 
+	estimation of the position. While relying on the information about the 
+	velocity of the drone, the drone needs to have inertial sensors attached. Having these IMU sensors, as the ardrone in the simulation does, also ORB SLAM would benifit from 
+	accuracy, since it the integration in the algorithm is implemented. However, if drone does not have these sensors attached, 
+	this node can still be of benefit, since it is possible to manually publish messanges to the topic. The initialization process could then be applied 
+	by manually flying the drone one meter up, and one meter foreward and logging these points to the system. Then the automazation process could be started.
+	Folling an overview over the input, output and computational functionality of the node. 
 	
 	\subsubsection{Input}
 	
@@ -77,7 +82,8 @@
 	\item{/drone\_position\_init}
 	
 	The drone also subscribes to the /drone\_position\_init topic, published by itself. This topic includes messenges of the class PointStamped. 
-	This class includes the x, y and z coordinate of the point itself, and a timestamp. The node also needs the information from this topic, 
+	This class includes the x, y and z coordinate of the point itself, and a timestamp.  
+	The node also needs the information from this topic, 
 	to read in the last position and update it based on the velocity, by doing the computations explained in the following section. The x y and z 
 	coordinates are transformed to meter. 
 	\end{enumerate}
@@ -140,8 +146,75 @@
 	
 	\subsection{Scale Recognition Node}
 	
+	This node estimates the true scale of the pointcloud. This is beneficial to later use the pointcloud for real life purposes. 
+	This is done by aligning the estimated position based on the velocity of the drone in the initialization process and the 
+	estimated position of the drone by the ORB-SLAM Algorithm. 
+	
 	\subsubsection{Input}
 	\subsubsection{Output}
+	\subsubsection{computation}
+	
+	
+	\begin{lstlisting}[language=python, caption=Main part of the scale estimation node, label=lst:scaleup]
+def update_scale(self):
+# return, if not enough points are available
+# since no scale can be computed
+if (len(self.est_pos_orb) < 25) or (len(self.est_pos_vel) < 25):
+	return
+
+# return the scale if it already has been calculated    
+elif self.scale:
+	return
+else:
+	# get minimum and maximum time for each queue to figure out, 
+	# how many points can be considered for alignment. This is only done once!
+	min_orb = np.min([pose_oi.header.stamp.to_sec() for pose_oi in self.est_pos_orb])
+	max_orb = np.max([pose_oi.header.stamp.to_sec() for pose_oi in self.est_pos_orb])
+
+	min_vel = np.min([point_oi.header.stamp.to_sec() for point_oi in self.est_pos_vel])
+	max_vel = np.max([point_oi.header.stamp.to_sec() for point_oi in self.est_pos_vel])
+
+	thresh_min = np.max([min_orb, min_vel])
+	thresh_max = np.min([max_vel, max_orb])
+
+	# cut off the queues
+	orb_oi = [pose_oi for pose_oi in self.est_pos_orb if pose_oi.header.stamp.to_sec() > thresh_min]
+	vel_oi = [point_oi for point_oi in self.est_pos_vel if point_oi.header.stamp.to_sec() > thresh_min]
+
+	# for the shorter remaining queue, get the matching point
+	if len(orb_oi) <= len(vel_oi): 
+		orb_oi_final = orb_oi
+		vel_oi_final = []
+		for pose_oi in orb_oi: 
+			diffs_oi = [np.abs(pose_oi.header.stamp.to_sec() - point_oi.header.stamp.to_sec()) for point_oi in vel_oi]
+			vel_oi_final.append(vel_oi[diffs_oi.index(min(diffs_oi))])
+
+	else:
+		vel_oi_final = vel_oi
+		orb_oi_final = []
+		for pose_oi in vel_oi: 
+			diffs_oi = [np.abs(pose_oi.header.stamp.to_sec() - point_oi.header.stamp.to_sec()) for point_oi in orb_oi]
+			vel_oi_final.append(vel_oi[diffs_oi.index(min(diffs_oi))])
+
+
+	# now do the alignment and compute the scale
+	x_orb = [pose_oi.pose.position.x for pose_oi in orb_oi_final]
+	y_orb = [pose_oi.pose.position.y for pose_oi in orb_oi_final]
+	z_orb = [pose_oi.pose.position.z for pose_oi in orb_oi_final]
+
+	x_vel = [point_oi.point.x for point_oi in vel_oi_final]
+	y_vel = [point_oi.point.y for point_oi in vel_oi_final]
+	z_vel = [point_oi.point.z for point_oi in vel_oi_final]
+	
+	orb_points = np.column_stack((x_orb, y_orb, z_orb))
+	vel_points = np.column_stack((x_vel, y_vel, z_vel))
+
+	s, R, t = align_umeyama(vel_points, orb_points)
+
+	# finally publish the computed scale 
+	self.scale_publisher.publish(Float64(s))
+	self.scale = s
+	\end{lstlisting}
 	
 	\subsection{Fight Path Planning Node}
 	
@@ -170,14 +243,24 @@
 	The current environments is set up with ROS kinetic and Ubuntu 16.04.6 LTS (Xenial). The tum\_simulator, ORB-SLAM and all of their dependencies are already installed. 
 	
 	\begin{lstlisting}[language=bash, caption=Launching the simulated environment, label=lst:sim_cmd]
+	
 # launch the gazebo simulation
 roslaunch cvg_sim_gazebo ardrone_testworld.launch
 	
 # launch ORB-SLAM
 rosrun ORB_SLAM2 Mono ${PATH_TO_VOCABULARY} ${PATH_TO_SETTINGS_FILE}
+
+# start the scale estimation node
+rosrun auto_explorer scale_updater.py
+
+# start the position estimation node
+rosrun auto_explorer position_updater.py
 	
 # takeoff with drone 
 rostopic pub -1 /ardrone/takeoff std_msgs/Empty
+
+# Then start flight path planner algorithm
+
 	\end{lstlisting}
 	
 	In listing \ref{lst:sim_cmd} the commands for launching the gazebo simulation, ORB-SLAM and the drone are displayed. After launching thouse 
