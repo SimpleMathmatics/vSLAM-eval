@@ -1,6 +1,12 @@
-\chapter{recommendation for further work regarding the full system}
+\chapter{Full automated exploration system}
 
-	Furthemore, a framework to test and build an entire automated system is suggested. This framework includes a 
+\section{Existing systems}
+
+% Ziel festlegen!!!
+	
+\section{suggested ROS framework}
+	
+	In this section a framework to test and build an entire automated system is suggested. This framework includes a 
 	simulated envorinment, that realisicly makes it possible, to navigate a drone within an simulated environment. The environment 
 	is based on the Roboter Operating System (ROS) and is completely simulated. 
 	
@@ -8,22 +14,28 @@
 	and the flight path planning algorithm, that work simultaniously. The general concept is that each of the algorithms takes the output of the other as 
 	input. 
 	
-	In the folling section the ROS framework is proposed and described in detail. 
+	In the folling section the suggested ROS framework is proposed and described in detail. 
 	
 	\fig{img/aut_system.png}{Automated SLAM system}{fig:autsys}{0.8}
-
-
-\section{ROS framework}
-
 		
-	ROS, as the name suggests, is a framework for a software infrastracture within a robot. With the right drivers installed, 
+	ROS stands for Roboter Operating System and as the name suggests, is a framework for a software infrastracture within a robot. With the right drivers installed, 
 	it can access and use the robots hardware and serves as a messenger system between robot components. Ros packages make it easy to 
 	reuse important functionalities. Gazebo on the other hand is a 3D dynamic simulator for robotics. It can accurately and efficiently simulate robots regarding
 	their physics. 
 	
+	The suggested ROS setup consists of different nodes. Each node runs a process where certain computations are performed. These computations are based on input data
+	and in most cases, also output data. Within ROS, data is shared and recieved over so called rostopics (in short topics). Each node can therefore publish the computed 
+	data over a certain topic or it can recieve data from a certain topic by subscribing it. The frequency, the data is streamed to the system is also defined for each 
+	topic. The frequency the data is recieved can also be meanually defined for each subsription. 
+	
+	In figure \ref{fig:autros} the suggested setup is displayed. The system consists of six nodes. The ORB-SLAM-Algorithm, together with the Path planning algorithm, 
+	form the nodes with the most complex computations. To complete the system and to provide a setup, where path planning algorithms can easily be tested, 
+	the other four nodes play a crucial part in the setup.	The functionality of all nodes are described in detail in the next sections. 
+	
 	\fig{img/aut_ros.png}{Overview over the suggested ROS framework}{fig:autros}{0.95}
 	
-	% Sprachenunabhängig
+	Since the nodes are only dependent on each other in a way that they communicate over standardized messenges, they are independent of the programming language. 
+	This means that while the ORB-SLAM node is implemented in C++, the position estimation node and the scale recognition node are implemented in python with rospy. 
 	
 	\subsection{TUM Simulation Node}
 	
@@ -41,18 +53,280 @@
 	
 	\fig{img/tum_sim.png}{tum simulator setup. Source: $http://wiki.ros.org/tum_simulator$}{fig:tumsim}{0.8}
 	
+	\subsubsection{Input}
 	
-	In figure \cite{fig:simfigs} the simulated environment with gazebo can be found in figure a. Here, the drone (in black) is flying in front of the building. 
-	The output of the front camera is shown in figure b. Therefore, the output calibration data of the front camera, such as the focal lengt, 
-	can be found in an own rostopic. In figure c, the ORB-SLAM-Algorithm was applied to the output of the front camera. Green dots represent the 
-	finding of an ORB-feature. 
+	\begin{enumerate}
+	\item{/cmd\_vel}
+	
+	This topic is explained in the upper section \ref{adafsf}.
+	
+	\end{enumerate}
+	
+	\subsubsection{Output}
+	
+	The drone has many sensors attached and more than thirty topics are logged to the system. However, here only the topics, that are of importance 
+	for the automation framework will listed. 
+	
+	\begin{enumerate}
+	
+	\item{/ardrone/front/camera\_info}
+	
+	Over the /ardrone/front/camera\_info topic, the node publishes messenges of the class CameraInfo. These messenges include information about 
+	image dimension, timestamp and imformation about the camera specific values, described in section \ref{asdfasdf}. In the case of the ardrone 2.0,
+	the front camera generates images with 640x360 pixels and the instrinct camera matrix is given by: 
+	
+	$$K = \begin{pmatrix} 374.6706070969281 & 0.0 & 320.5 \\
+						  0.0 & 374.6706070969281 & 180.5 \\ 
+						  0 & 0 & 1 \end{pmatrix}$$
+	
+	\item{/ardrone/front/image\_raw}
+	
+	The node publishes the output images of the front camera. The metadata of the camera are provided in the topic /ardrone/front/camera\_info described above. 
+	
+	\item{/ardrone/navdata}
+	
+	Messenges of the specially developed class Navdata are published to thig topic by this node. These messenges include information about 
+	pattery percentage of the drone, state of the drone (e.g hovering, flying, init, landing...), pressure, temperature, wind, velocity and 
+    some more. These messenges are also timestamped. 	
+	
+	\item{/ardrone/takeoff}
+	
+	As the name of the topic suggests, the drone takes off, when empty messenges are published to the thred. How this looks exactly can be found in 
+	listing \ref{asdfasdf}.
+	
+	\item{/gazebo/model\_states}
+	
+	Gazebo provides the possibility to access the current pose of each model existing in a respective gazebo world. For example the ardronetestworld, 
+	that is displayed in figure \ref{adsfasdfasdf}, consists of the drone itself, several houses, a barrier etc.
+	
+	Therefore, the /gazebo/model\_states topic 
+	publishes the list of the pose, $x_i \in \text{SE}(3)$ of each model.
+	
+	\item{/ardrone/collision}
+	
+	This topic is explained in the upper section \ref{adafsf}.
+	
+	\end{enumerate}
+	
+	
 	
 	\subsection{ORB-SLAM Node}
 	
-	The ORB-SLAM algorithm runs in 
+	The ORB-SLAM algorithm runs in a seperate node. For the vocabulary file, needed for the bag of words approach, explained in section \ref{q23r134}, the 
+	standard vocabulary file proveded by the authers are considered. For the virtual environment, it might be useful to provide a vocabulary file 
+	generated for this particular purpuse, since in the simulation generated with the tum\_simulation, edjed might be of different shape, e.g paricularly sharp. 
+	
+	The node publishes the pose $x_i \in \text{SE}(3)$ and map\_points. Because the original ORB ROS implementation didn't have an option for publishing data and 
+	projects, that implemented this functionality, these features had to be implemented. 
 	
 	\subsubsection{Input}
+	
+	\begin{enumerate}
+	\item{/ardrone/front/image\_raw}
+	
+	This topic is explained in the upper section \ref{adafsf}.
+	
+	\end{enumerate}
+	
+    \subsubsection{Output}
+	
+	\begin{enumerate}
+	\item{/orb/pose}
+	
+	This topic publishes messenges of the class PoseStamped. This class includes a header, where the frame\_id and most importantly a timestamp can be provided. 
+	The pose is then given by x, y, and z position coordinates and the oriantation is given with quaternions coordinates. % erklärung hier
+	The topic is published at a frequncy of 30 Hz. 
+	
+	\item{/orb/map\_points}
+	
+	This topic publishes messanges of the class PointCloud and also runs at a frequency of 30 Hz. The class consist of a vector of points of the 
+	class Point32, all having x, y, and z coordinates containing 32 bit data. 
+	 
+
+	\end{enumerate}
+	
+	\subsubsection{calculation}
+	
+	For the calculation of the pose and map\_points, the section \ref{asdfasdf} can be refered to. 
+	
+
+	
+	\subsection{Alignment node}
+	
+	One benefit of implementing the automated system in a virtual environment is that the true position of the drone and the environment is known at 
+	all times. As mentioned in section{asdfasdf} gazebo provides the true positions of all models present in the gazebo world. Most importantly, this includes 
+	the pose of the drone. In order to transform the pointcloud that is computetd by the ORB-SLAM algorithm to the reference of the gazebo world, the estimated 
+	position by ORB-SLAM and the true position are again aligned with the method of umeyama. 
+	
+	This node computes this transformation and outputs the resulting transformation matrix, translation vector and scale. 
+	
+	
+	\subsubsection{Input}
+	
+	\begin{enumerate}
+	\item{/ardrone/true\_position}
+	
+	In order to align the trajectories, the true position of the drone is needed. 
+	While gazebo provides this data in the /gazebo/model\_states topic, the model 
+	positions do not include a timestamp. Because a timestamp is needed for the alignment 
+	in order to only align the matching positions, another node was created to add a timestamp 
+	to the gazebo output positions. This node subscribes to the /gazebo/model\_states topic 
+	and privides the data with a timestamp. To keep the time error, that results in reading in 
+	the topic data as small as possible, 
+	the node runs at an quite high frequency of 100 Hz. 
+	
+	Because the node is very simple only executes the task of stamping the true positions, 
+	it is not listed in this chapter. 
+	
+	\item{/orb/pose}
+	
+	To align the groundtruth position and the estimated position of ORB, the /orb/pose topic published 
+	by the ORB node described in section \ref{adsfaf} is subscribed to by the node. 
+	
+	\end{enumerate}
+	
 	\subsubsection{Output}
+	
+	\begin{enumerate}
+	\item{/scale}
+	
+	The node publishes the scale computed with the method of umeyama to  the /scale topic. 
+	
+	\item{/rotation\_matrix}
+	
+	The node publishes the rotation matrix as a flat numpy array computed with the method of umeyama to  the /rotation\_matrix topic.
+	
+	\item{/translation}
+	
+	The node publishes the scale as a flat numpy array computed with the method of umeyama to  the /translation topic.
+	
+	\end{enumerate}
+	
+	\subsection{computations}
+	
+	If all necessary nodes are up and running, the data  logged to /orb/pose at 15Hz and to /ardrone/true\_position at 50 Hz is stored at two lists. This is done at 
+	a frequency of 10 Hz. Before aligning the points in the list, it is waited until 50 points are logged to each list. If only one list has reached 
+	the lengt of 50, new elements are stacked on top, while the oldest are removed. 
+	
+	Then, the lists are culled in a way, that the minimum and maximum of the timestamp align. This is done in order to save uneccessary resources in the following.
+	transformation step. Since the lists now may be of different length because they origin from topics with different logging frequency, 
+	for the shorter list, for each element the element from the other list with the smallest timedifference is matched. This assures that the points 
+	estimated by orb and from the voloity are measured at the same time. 
+	
+	Finally, the points are aligned by using the method of umeyame, as described in section \ref{qrq3414} and the scale, the rotation matrix and the translation
+    vector are published to the topic. 
+	
+	These computational steps are processed in the main callback loop of the respoctive file for the node. The function of the main loop is shown in listing \ref{lst:scaleup} in order 
+	to provide further clarification of the computation to the reader. 
+	
+\begin{lstlisting}[language=python, caption=Main part of the scale estimation node, label=lst:scaleup]
+def update_trans_variables(self):
+	# return, if not enough points are available
+	# since no scale can be computed
+	if (len(self.est_pos_orb) < 50) or (len(self.true_pos) < 50):
+		print("not enough data available, waiting...")
+		return
+
+	# return the scale if it already has been calculated    
+	else:
+		# get minimum and maximum time for each queue to figure out, 
+		# how many points can be considered for alignment. This is only done once!
+		min_orb = np.min([pose_oi.header.stamp.to_sec() for pose_oi in self.est_pos_orb])
+		max_orb = np.max([pose_oi.header.stamp.to_sec() for pose_oi in self.est_pos_orb])
+
+		min_true = np.min([point_oi.header.stamp.to_sec() for point_oi in self.true_pos])
+		max_true = np.max([point_oi.header.stamp.to_sec() for point_oi in self.true_pos])
+
+		thresh_min = np.max([min_orb, min_true])
+		thresh_max = np.min([max_true, max_orb])
+
+		# cut off the queues
+		orb_oi = [pose_oi for pose_oi in self.est_pos_orb if pose_oi.header.stamp.to_sec() > thresh_min]
+		true_oi = [pose_oi for pose_oi in self.true_pos if pose_oi.header.stamp.to_sec() > thresh_min]
+
+		# for the shorter remaining queue, get the matching point
+		if len(orb_oi) <= len(true_oi): 
+			orb_oi_final = orb_oi
+			true_oi_final = []
+			for pose_oi in orb_oi: 
+				diffs_oi = [np.abs(pose_oi.header.stamp.to_sec() - point_oi.header.stamp.to_sec()) for point_oi in true_oi]
+				true_oi_final.append(true_oi[diffs_oi.index(min(diffs_oi))])
+
+		else:
+			true_oi_final = true_oi
+			orb_oi_final = []
+			for pose_oi in true_oi: 
+				diffs_oi = [np.abs(pose_oi.header.stamp.to_sec() - point_oi.header.stamp.to_sec()) for point_oi in orb_oi]
+				true_oi_final.append(true_oi[diffs_oi.index(min(diffs_oi))])
+
+		# now do the alignment and compute the scale
+		x_orb = [pose_oi.pose.position.x for pose_oi in orb_oi_final]
+		y_orb = [pose_oi.pose.position.y for pose_oi in orb_oi_final]
+		z_orb = [pose_oi.pose.position.z for pose_oi in orb_oi_final]
+
+		x_true = [pose_oi.pose.position.x for pose_oi in true_oi_final]
+		y_true = [pose_oi.pose.position.y for pose_oi in true_oi_final]
+		z_true = [pose_oi.pose.position.z for pose_oi in true_oi_final]
+		
+		orb_points = np.column_stack((x_orb, y_orb, z_orb))
+		true_points = np.column_stack((x_true, y_true, z_true))
+		s, R, t = align_umeyama(true_points, orb_points)
+		R = R.reshape([9,])
+
+		# finally publish the computed scale, matrix and vector
+		if s>0:
+			self.scale_publisher.publish(Float64(s))
+		if sum(np.isnan(R)) == 0:
+			self.rot_publisher.publish(R)
+		if sum(np.isnan(t)) == 0:
+			self.trans_publisher.publish(t)
+\end{lstlisting}
+	
+	
+	\subsection{Scale Recognition Node}
+	
+	This node estimates the true scale of the pointcloud. This is beneficial to later use the pointcloud for real life purposes. 
+	This is done by aligning the estimated position based on the velocity of the drone in the initialization process and the 
+	estimated position of the drone by the ORB-SLAM Algorithm. If the scale has been calculated, the node logs the constant scale 
+	to the topic. Note, that the scale is still just an estimation, since the scale may drift while the ORB-SLAM Algorithm continues
+	running. This is called scale drift.
+	
+	\subsubsection{Input}
+	
+	\begin{enumerate}
+	\item{/drone\_position\_init}
+	
+	This topic is explained in the upper section \ref{adafsf}. 
+	
+	\item{/orb/pose}
+	
+	This topic is explained in the upper section \ref{adafsf}.
+	
+	\end{enumerate}
+	
+	\subsubsection{Output}
+	
+	\begin{enumerate}
+	\item{/scale\_estimation}
+	
+	The node publishes a topic called /scale\_estimation, which is a float64 representing the calculated scale. If the scale is not yet computed, nothing is published. 
+	
+	\end{enumerate}
+	
+	\subsubsection{computation}
+	
+	If all nodes are up and running, the data logged to /orb/pose at 15Hz and to /scale\_estimation at 10 Hz is stored at two lists. This is done at 
+	a frequency of 10 Hz. Before aligning the points in the list, it is waited until the 25 points are logged to each list. If only one list has reached 
+	the lengt of 25, new elements are stacked on top, while the oldest are removed. 
+	
+	Then, the lists are culled in a way, that the timestamps of the oldest and newest messages are aligned. Even though the scale is only computed once, 
+	this saves unneccessary resource. Since the lists now may be of different length because they origin from topics with different logging frequency, 
+	for the shorter list, for each element the element from the other list with the smallest timedifference is matched. This assures that the points 
+	estimated by orb and from the voloity are measured at the same time. 
+	
+	Finally, the points are aligned by using the method of umeyame, as described in section \ref{qrq3414} and the scale is published to the topic. 
+	
+	These computational steps are processed in the main callback loop of the respoctive file for the node. The function of the main loop is shown in listing.
 	
 	\subsection{Position Estimation Node}
 	
@@ -61,11 +335,15 @@
 	to also scale the computed point cloud by the ORB SLAM node to its true scale. This method should be done in the initialization process, by 
 	only doing translational movements with the drone, such as a takeoff and a short foreward movement. No rotations should be performed with the drone 
 	since the drones navigation data, such as the veloxity, uses the bodyframe as reference frame. Thus doing rotations would result in an incorrect 
-	estimation of the position. While relying on the information about the 
+	estimation of the position. 
+	
+	While relying on the information about the 
 	velocity of the drone, the drone needs to have inertial sensors attached. Having these IMU sensors, as the ardrone in the simulation does, also ORB SLAM would benifit from 
 	accuracy, since it the integration in the algorithm is implemented. However, if drone does not have these sensors attached, 
 	this node can still be of benefit, since it is possible to manually publish messanges to the topic. The initialization process could then be applied 
 	by manually flying the drone one meter up, and one meter foreward and logging these points to the system. Then the automazation process could be started.
+	
+	
 	Folling an overview over the input, output and computational functionality of the node. 
 	
 	\subsubsection{Input}
@@ -75,9 +353,9 @@
 	\begin{enumerate}
 	\item{/ardrone/navdata}
 	
-	This topic is beeing published with the tum simulation node described in item \ref{asdfasdf} and is a messenger class developed for the ardrone.
+	This topic is beeing published with the tum simulation node described in item \ref{asdfasdf}.
 	This node only uses the velocity vectors
-	$v_x \in \mathbb{R}, v_y \in \mathbb{R}, v_z \in \mathbb{R}$ given in the unit $mms^{-1}$. 
+	$v_x \in \mathbb{R}, v_y \in \mathbb{R}, v_z \in \mathbb{R}$ given in the unit $mms^{-1}$ included in the published navdata messenges. 
 	
 	\item{/drone\_position\_init}
 	
@@ -119,109 +397,150 @@
 	
 	\begin{lstlisting}[language=python, caption=Main part of the position estimation node, label=lst:posupdate]
 	def update_position(self):
-        # get velocity in x, y and z direction
-        x_vel = self.navdata.vz
-        y_vel = self.navdata.vy
-        z_vel = self.navdata.vz
+# get velocity in x, y and z direction
+x_vel = self.navdata.vz
+y_vel = self.navdata.vy
+z_vel = self.navdata.vz
 
-        if x_vel is not None and y_vel is not None and z_vel is not None:
-			# get time difference
-            curr_time = rospy.Time.now()
-            time_diff = (curr_time - self.position.header.stamp).to_sec()
-			
-			# create the new point
-            new_point = PointStamped()
-            new_point.header.stamp = curr_time
-            new_point.header.frame_id = "init"
-			
-			# update positions
-            new_point.point.x = self.position.point.x + time_diff * x_vel / 1000
-            new_point.point.y = self.position.point.y + time_diff * y_vel / 1000
-            new_point.point.z = self.position.point.z + time_diff * z_vel / 1000
-			
-			# publish
-            self.position_publisher.publish(new_point)
-            rospy.sleep(0.1)
+if x_vel is not None and y_vel is not None and z_vel is not None:
+	# get time difference
+	curr_time = rospy.Time.now()
+	time_diff = (curr_time - self.position.header.stamp).to_sec()
+	
+	# create the new point
+	new_point = PointStamped()
+	new_point.header.stamp = curr_time
+	new_point.header.frame_id = "init"
+	
+	# update positions
+	new_point.point.x = self.position.point.x + time_diff * x_vel / 1000
+	new_point.point.y = self.position.point.y + time_diff * y_vel / 1000
+	new_point.point.z = self.position.point.z + time_diff * z_vel / 1000
+	
+	# publish
+	self.position_publisher.publish(new_point)
+	rospy.sleep(0.1)
 	\end{lstlisting}
 	
-	\subsection{Scale Recognition Node}
 	
-	This node estimates the true scale of the pointcloud. This is beneficial to later use the pointcloud for real life purposes. 
-	This is done by aligning the estimated position based on the velocity of the drone in the initialization process and the 
-	estimated position of the drone by the ORB-SLAM Algorithm. 
+	\subsection{Transformation and Constrain Node}
+	
+	This node processes the scale, rotation matrix and translation vector computed in the alignment node and transformes the orb pose and the pointcloud computed 
+	by orb slam into the reference frame of the gazebo world. In addition, constrains are added to the searching space of the path finding algorithm by adding 
+	walls of points in the resulting point cloud of ORB. 
+	
+	These processes make sense for many reasons. On the one hand transforming the ORB\_SLAM output in the gazebo world creates the possibility to compare the 
+	estimated position of the ORB-SLAM-Algorithm to the groundtruth position as it also has been done in the evaluation of the vSLAM algorithms. While it is 
+	was not yet managed to extract the groundtruth pointcloud of the gazebo world, as described in issue \ref{asdfadsf}, it is technically possible, to also 
+	compare the groundtruth pointcloud to the generated one. On the other hand, it also enables users to track the path planned by the path planning algorithm relative
+	to its surrounding in the future. 
+	
+	The restriction of the searching space is useful, because the aim the path planning algorithm is to explore unseen areas in in the searching space. Obviosly, 
+	since the path planning algorithm relys exclusivly on the pointcloud, unseen areas are then defined as areas, where no points are available. The gazebo world, 
+	displayed in figure \ref{asdfadsf}, exceeds in unlimited space and therefore will cause the path finding algorithm to navigate in infinite space. Also the ground, sides and 
+	sky of the world have no texture, and will make it impossible to find features and therefore generate points for the ORB-SLAM-Algorithm. Unfortunately, 
+	as described in issue \ref{dsf}, no other world is yet available. Thus, adding points to 
+	limit the searching space is crucial. This is the reason why most navigation algorithm are constructed for indoor navigation \ref{cite:asdf}. 
 	
 	\subsubsection{Input}
+	
+	\begin{enumerate}
+	\item{/orb/map\_points}
+	
+	The ORB point cloud topic, described in section \ref{adsfadsf} subscribed to by the node. 
+	
+	\item{/orb/pose}
+	
+	Since also the pose is transformed in the gazebo reference frame, the /orb/pose topic is also used as input. 
+	
+	\end{enumerate}
+	
 	\subsubsection{Output}
+	
+	\begin{enumerate}
+	\item{/pointcloud\_transformed}
+	
+	The node publishes data to the topic /pointcloud\_transformed with messenges of the class PointCloud. Therefore, the pointcloud contains the transformed 
+	pointcloud of ORB SLAM and the points, that are inserted to limit the searching space of the flight path finding algorithm. 
+	The exact computations are shown 
+	in section below. 
+	
+	\item{/pose\_transformed}
+	
+	Also the orb pose is transfomed and published in the /pose\_transformed topic. The timestamp for the transformed pose is taken from the original pose 
+	calculated by ORB, since the alignment process relies on the timestamp, when the pose was computed. 
+	
+	\end{enumerate}
+	
 	\subsubsection{computation}
 	
+	First, all points $p_i$ in the point cloud and the estimated positions are transformed with the rotation matrix $R$, scale $s$ and transformation vector $t$ recieved 
+	from the above described topics. The resulting points are therefore computed by: 
 	
-	\begin{lstlisting}[language=python, caption=Main part of the scale estimation node, label=lst:scaleup]
-def update_scale(self):
-# return, if not enough points are available
-# since no scale can be computed
-if (len(self.est_pos_orb) < 25) or (len(self.est_pos_vel) < 25):
-	return
-
-# return the scale if it already has been calculated    
-elif self.scale:
-	return
-else:
-	# get minimum and maximum time for each queue to figure out, 
-	# how many points can be considered for alignment. This is only done once!
-	min_orb = np.min([pose_oi.header.stamp.to_sec() for pose_oi in self.est_pos_orb])
-	max_orb = np.max([pose_oi.header.stamp.to_sec() for pose_oi in self.est_pos_orb])
-
-	min_vel = np.min([point_oi.header.stamp.to_sec() for point_oi in self.est_pos_vel])
-	max_vel = np.max([point_oi.header.stamp.to_sec() for point_oi in self.est_pos_vel])
-
-	thresh_min = np.max([min_orb, min_vel])
-	thresh_max = np.min([max_vel, max_orb])
-
-	# cut off the queues
-	orb_oi = [pose_oi for pose_oi in self.est_pos_orb if pose_oi.header.stamp.to_sec() > thresh_min]
-	vel_oi = [point_oi for point_oi in self.est_pos_vel if point_oi.header.stamp.to_sec() > thresh_min]
-
-	# for the shorter remaining queue, get the matching point
-	if len(orb_oi) <= len(vel_oi): 
-		orb_oi_final = orb_oi
-		vel_oi_final = []
-		for pose_oi in orb_oi: 
-			diffs_oi = [np.abs(pose_oi.header.stamp.to_sec() - point_oi.header.stamp.to_sec()) for point_oi in vel_oi]
-			vel_oi_final.append(vel_oi[diffs_oi.index(min(diffs_oi))])
-
-	else:
-		vel_oi_final = vel_oi
-		orb_oi_final = []
-		for pose_oi in vel_oi: 
-			diffs_oi = [np.abs(pose_oi.header.stamp.to_sec() - point_oi.header.stamp.to_sec()) for point_oi in orb_oi]
-			vel_oi_final.append(vel_oi[diffs_oi.index(min(diffs_oi))])
-
-
-	# now do the alignment and compute the scale
-	x_orb = [pose_oi.pose.position.x for pose_oi in orb_oi_final]
-	y_orb = [pose_oi.pose.position.y for pose_oi in orb_oi_final]
-	z_orb = [pose_oi.pose.position.z for pose_oi in orb_oi_final]
-
-	x_vel = [point_oi.point.x for point_oi in vel_oi_final]
-	y_vel = [point_oi.point.y for point_oi in vel_oi_final]
-	z_vel = [point_oi.point.z for point_oi in vel_oi_final]
+	$$p'_i = sRp_i + t$$.
 	
-	orb_points = np.column_stack((x_orb, y_orb, z_orb))
-	vel_points = np.column_stack((x_vel, y_vel, z_vel))
+	Then, the restriction points are added to the pointcloud.
+	The ground plane of the gazebo world has a size of 100x100, but only the center is filled with objects (models). The middle of the plane 
+	lies in the axact origin of the gazebo world. The goal is to restrict the search space of the path planning algorithm to the hull of a cuboid with 15m
+	height, 60m length and width. The cuboid is therefore given by: 
+	
+	$$\Omega = \left\{(x, y, z) \in \mathbb{R} : x \in \left[-30, 30\right] \land y \in \left[-30, 30\right] \land z \in \left[-30, 30\right] \right\}$$.
+	
+	Then, 10000 points for each side of the hull of $\Omega$ are added to the generated point cloud by ORB, after it was transformed. This can simply been achieved 
+	in three consecutively for loops. This is shown in listing \ref{lst:const} for the upper and lower restrictions. These loops are run for the sides respectively. 
+	
+	\begin{lstlisting}[language=python, caption=Adding upper and lower restrictions to pointcloud. , label=lst:const]
+	
+# bottom and top 
+for x_oi in np.linspace(-30, 30, 100): 
+	for y_oi in np.linspace(-30, 30, 100): 
+		for z_oi in [0, 15]: 
+			p_out = Point32()
+			p_out.x = x_oi
+			p_out.y = y_oi
+			p_out.z = z_oi
+			pq.points.append(p_out)
 
-	s, R, t = align_umeyama(vel_points, orb_points)
-
-	# finally publish the computed scale 
-	self.scale_publisher.publish(Float64(s))
-	self.scale = s
 	\end{lstlisting}
+
+	Note that for the point cloud the coordinates are only stored in 32 bit to save resouces, since the pointclouds can contain ten thousands of datapoints. In order not 
+	to overload the system, the transformation node runs on a frequency of only 5Hz, which results in smooth computation. 
 	
 	\subsection{Fight Path Planning Node}
 	
+	The fight path planning node is in charge of autonomously navigating the drone. This should be done without colliding with any obsticals. 
+	On the other hand, since the goal is to explore the environment, the algorithm should always thrive to visit new areas in order to generate 
+	new map points. 
+	
+	While the computation of this node is not yet implemented and is not part of this work, the desired input and output can be cleanly defined.
+	
 	\subsubsection{Input}
+	
+	\begin{enumerate}
+	\item{/global\_map\_points}
+	
+	This topic is explained in the upper section \ref{adafsf}. 
+	
+	\item{/global\_map\_points}
+	
+	This topic is explained in the upper section \ref{adafsf}.
+	
+	
+	\end{enumerate}
+	
 	\subsubsection{Output}
 	
+	\begin{enumerate}
+	\item{/cmd\_vel}
+	This topic is explained in the upper section \ref{adafsf}.
+	\end{enumerate}
+	
+	
 	\section{Current setup}
+	
+	In figure \cite{fig:simfigs} the simulated environment with gazebo can be found in figure a. Here, the drone (in black) is flying in front of the building. 
+	The output of the front camera is shown in figure b. In figure c, the ORB-SLAM-Algorithm was applied to the output of the front camera. Green dots represent the 
+	finding of a ORB-features.
 	
 	\begin{figure}%
     \centering
@@ -238,9 +557,13 @@ else:
 	\end{figure}
 	
 	Currently the framework is set up in an environment provided by theconstructsim.com. This platform is enabling ROS-developers to program in preconfigured
-	ROS-environments. The environment comes with the possibility to open terminal consols, a file management system, a simulator, that automatically 
+	ROS-environments. The environment comes with the possibility to open terminal consols, a file management system, a gazebo simulator, that automatically 
 	detects, when a gazebo simulation is running. Also, you have a graphical interface for other graphical applications, such as the viewer of ORB-SLAM.
 	The current environments is set up with ROS kinetic and Ubuntu 16.04.6 LTS (Xenial). The tum\_simulator, ORB-SLAM and all of their dependencies are already installed. 
+	The provided machine consists of 16 processing kernels and contains a total RAM space of 29 GB.  The hard drive offers 92 GB of available space. However, 
+	theconstructsim.com limits each user to 8 hours daily on the platform. 
+	
+	The project is publicly available under the name tum simulator test.
 	
 	\begin{lstlisting}[language=bash, caption=Launching the simulated environment, label=lst:sim_cmd]
 	
@@ -268,4 +591,41 @@ rostopic pub -1 /ardrone/takeoff std_msgs/Empty
 	exist \cite{path}, appying it on the system is not part of this paper and will be done in further research. 
 
 	\subsection{Known Issues}
-	% andere umgebung, boden ist nicht gut. 
+	
+	\begin{enumerate}
+	
+	\item{Only one world available}
+	
+	For the tum\_simulator it might be useful to continue the atomation process in another simulated world. This is because the current world named ardrone\_testworld
+	doesn't contain any contours or relief on the ground, and sky, as shown in figure \ref{asdfasdf}. Since the ORB-SLAM algorithm is looking for features such as edjes and changes in pixel intensites, 
+	it will not find any on the ground, which will result in no points available in this are for the resulting point cloud. While there are many worlds available in the 
+	tum\_simulator package, since the package is originally not made for ROS kinetic, these worlds will not compile and running the command to start one of those worlds, 
+	as shown in listing \ref{lst:worldchange} will result in the follwing error: 
+	
+	\texttt{ERROR: cannot launch node of type [gazebo/spawn\_model]: gazebo.}
+	
+	So far, no solution has been detected, but one possible workaround would either to build another world from scratch. Another possible solution would be to add flying 
+	constrains to the path planning algorithms, that limits the environments on a predefined volume. This solution is implemented by the bla bla node, described in section 
+	\ref{dsfadf}, which restriction points to the pointcloud. 
+	
+	
+\begin{lstlisting}[language=bash, caption=launching different world, label=lst:worldchange]
+	
+# launch different world named land_station1
+roslaunch cvg_sim_gazebo land_station1.launch
+
+\end{lstlisting}
+
+	\item{No ground truth pointcloud}
+	
+	While the pose and position of the models in the gazebo world, such as the drone itself, the houses and other objects, are known, it was not yet possible 
+	to convert these objects into pointclouds. 
+	
+	% problembeschreibung hier noch. 
+	
+	This refuses the possibilty to compare the evaluated points by the ORB algorithm in the ROS setup, to their true position. Users of the setup now have to solely
+	rely on the results of evaluation described in section \ref{asdfasdf}.
+	
+	\item{No bumper}
+
+	\end{enumerate}

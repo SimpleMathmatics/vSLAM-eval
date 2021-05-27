@@ -1,5 +1,7 @@
 \chapter{Introduntion to vSLAM Algorithms}
 
+\section{Introduction and History of SLAM}
+
 SLAM is one of the most emerging research topics in robotics \cite{slamintro}. It is applied in various applications, such as in augmented reality to estimate the camera pose,
 autonomous navigation and computer vision-based online 3D modeling \cite{evolved} \cite{dso}.
 The problem can be defined in a probabilistic way. The goal is to compute 
@@ -78,11 +80,15 @@ and vocabulary used in SLAM
 		
 		and $ R \in \mathbb{R}^{3x3}$ beiing a rotation matrix and $ t \in \mathbb{R}^{3}$ a translational vector, is an element of $\text{SE}(3)$.
 		
+		% add quantinion.
+		
 		\subsubsection{Pointcloud}
 		
 		When we speak of pointcloud, we simply mean a formation of points in the threedimensional space, though having
 		an x y and z coordinate. Later in the evaluation of the algorithms, to save these pointclouds, the PLY format has 
 		been chosen. 
+		
+		\subsubsection{Camera Calibration}
 
 	\section{ORB-SLAM}
 	
