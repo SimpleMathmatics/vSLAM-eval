@@ -4,7 +4,7 @@
 
 % Ziel festlegen!!!
 	
-\section{suggested ROS framework}
+\section{suggested ROS framework} \label{rosframe}
 	
 	In this section a framework to test and build an entire automated system is suggested. This framework includes a 
 	simulated envorinment, that realisicly makes it possible, to navigate a drone within an simulated environment. The environment 
@@ -506,7 +506,7 @@ for x_oi in np.linspace(-30, 30, 100):
 	Note that for the point cloud the coordinates are only stored in 32 bit to save resouces, since the pointclouds can contain ten thousands of datapoints. In order not 
 	to overload the system, the transformation node runs on a frequency of only 5Hz, which results in smooth computation. 
 	
-	\subsection{Fight Path Planning Node}
+	\subsection{Flight Path Planning Node} \label{path}
 	
 	The fight path planning node is in charge of autonomously navigating the drone. This should be done without colliding with any obsticals. 
 	On the other hand, since the goal is to explore the environment, the algorithm should always thrive to visit new areas in order to generate 

@@ -1,6 +1,7 @@
-\chapter{Introduntion to vSLAM Algorithms}
+\chapter{Evaluation and Selection of vSLAM Algorithm}
+\section{Related Work}
 
-\section{Introduction and History of SLAM}
+\subsection{Introduction and History of SLAM}
 
 SLAM is one of the most emerging research topics in robotics \cite{slamintro}. It is applied in various applications, such as in augmented reality to estimate the camera pose,
 autonomous navigation and computer vision-based online 3D modeling \cite{evolved} \cite{dso}.
@@ -55,7 +56,7 @@ other research results in this area.
 In the following section, an overview over how the algorithms work is given for each method. However, in order to understand this section, it is crutial to clarify basic definitions 
 and vocabulary used in SLAM
 
-	\section{Definitions}
+	\subsection{Definitions}
 		
 		\subsubsection{Keyframe}
 		
@@ -90,7 +91,7 @@ and vocabulary used in SLAM
 		
 		\subsubsection{Camera Calibration}
 
-	\section{ORB-SLAM}
+	\subsection{ORB-SLAM}
 	
 	ORB SLAM is a feature based, state of the art slam method. The first version was published in 2015 \cite{orb}. 
 	Here, an overview of the functionality of ORB SLAM is provided. The Algorithms runs on three threats simultanously.
@@ -100,7 +101,7 @@ and vocabulary used in SLAM
 	
 	\fig{img/orb_slam_overview.png}{Overview of the system components extracted from \cite{orb}}{fig:orb_fig}{0.6}
 	
-	\subsection{Tracking}
+	\subsubsection{Tracking}
 	
 	The tracking component determines the localization of the camera and decides, when a new keyframe is beeing inserted.
 	As it is shown in figure \ref{fig:orb_fig}, the tracking is performed in four steps.
@@ -147,7 +148,7 @@ and vocabulary used in SLAM
 	
 
 	
-	\subsection{Local Mapping}
+	\subsubsection{Local Mapping}
 	
 	Whenever a new Keyframe $K_i$ is inserted, the map is updated. 
 	
@@ -214,7 +215,7 @@ and vocabulary used in SLAM
 	
 	\end{enumerate}
 	
-	\subsection{Loop Closing}
+	\subsubsection{Loop Closing}
 	
 	The loop closing is computed based on the last inserted keyframe $K_i$. 
 	
@@ -247,11 +248,11 @@ and vocabulary used in SLAM
 	
 	\end{enumerate}
 
-	\section{DSO-SLAM}
+	\subsection{DSO-SLAM}
 	
 	Direct Sparse Odometry was developed in 2016 by the Technische Universität München. % hier noch paar sätze dazu
 	
-	\subsection{Model Overview}\label{samemodel}
+	\subsubsection{Model Overview}\label{samemodel}
 	
 	The model optimzes the photometric error over a window of recent frames. 
 	
@@ -271,7 +272,7 @@ and vocabulary used in SLAM
 	
 	% hier ist noch viel zu schreiben
 	
-	\subsection{Visual Odometry Front-End}
+	\subsubsection{Visual Odometry Front-End}
 	
 	The front end determine the sets $\mathcal{F}$, $\mathcal{P}_i$ and $\text{obs}\left(p\right)$. Also it initializes all parameters required to calcualte the term \ref{eq:test}. 
 	Finally it decides, when to remove points, outliers and keyframes. Frame and point management are closer described in the following. 
@@ -324,22 +325,23 @@ and vocabulary used in SLAM
 	
 	\end{enumerate}
 
-	\section{DSM-SLAM}
+	\subsection{DSM-SLAM}
 	
 	Direct Sparce Mapping SLAM was released in april 2019 and works similar to DSO slam but claims to be more robust when revisiting 
 	areas. The algorithm can be seperated into a tracking 
 	front-end and an optimization back-end that run on parallel threads. 
 	
-	\subsection{Model Overview}
+	\subsubsection{Model Overview}
 	
 		DSM uses the same model as DSO. The model is described in section \ref{samemodel}.
 	
-	\subsection{Front-End}
+	\subsubsection{Front-End}
 	
 	The front-end, however, differs from DSO. While DSO cannot reuse points that have one beein marginalized, DSM suggests a method 
 	to activate and inactivate keyframes and points to its needs. 
 	
-	\subsubsection{keyframe and mappoint selection}
+	\begin{enumerate}
+	\item{keyframe and mappoint selection}
 	
 	When selecting keyframes and mappoints, two criteria play a role: the temporal and covisibility criteria. 
 	The temporal parts regards $N_t$ keyframes as recent sliding window approach, just like DSO. With similar 
@@ -374,7 +376,7 @@ and vocabulary used in SLAM
 	
 	\fig{img/dsmKeyframes.png}{Keyframe and Point Selection of DSM. Source: \cite{dsm}}{fig:dsm_fig}{0.7}
 	
-	\subsubsection{Frame Tracking, New Keyframe desicion, New Map Point Tracking}
+	\item{Frame Tracking, New Keyframe desicion, New Map Point Tracking}
 	
 	Frame Tracking, New Keyframe desicion and New Map Point Tracking work similar to DSO slam. The main idea is always to manipulate the local map 
 	by minimizing the photometric error displayed in equation \ref{eq:test}. 
@@ -384,5 +386,5 @@ and vocabulary used in SLAM
 	Obviously, this also brings the difference compared to DSO slam, that keyframes and map points are not permanently culled from the 
 	map, and may be reactivated once the keyframe appears in the covisibilty graph. Also, the management of outliers is similar to DSO-SLAM, 
 	Trying to remove outliers as early as possible, in order to save computational resources. 
- 
+	\end{enumerate}
  

@@ -1,9 +1,9 @@
-\chapter{Results}
+\section{Results}
 
 The three SLAM algorithms were evaluated regarding the computed trajectories, the resulting pointclouds and
 the computational complexity. 
 
-\section{Trajectory Evaluation}
+\subsection{Trajectory Evaluation}
 
 	In order to evaluate the quality of the trajectory computed by the algorithms, the trajectory firstly had to be 
 	transformed into the world reference of the ground truth data. This is because the algorithms usually initialize
@@ -66,7 +66,7 @@ the computational complexity.
 	}{fig:boxplot_traj}{1}
 	
 	
-\section{Pointcloud Evaluation}
+\subsection{Pointcloud Evaluation}
 
 For the evaluation of the computed point clouds, these point clouds were first visually observed, as described in section \ref{sec}. 
 Figure \ref{fig:pointcloud} shows the evaluated point clouds aligned with the ground truth point cloud for sequence V101. This is a sequence, 
@@ -91,7 +91,7 @@ What becomes clear at first glance is, that as mentioned, ORB generates only few
  third image closely. When looking at the matraccess in the middle of the room, the accumulated error expresses itself by points hovering in the air 
  in a clear plane. 
  
- 
+ % irgendwo noch das dynimaische umgebung problem für slam ist. 
 
 	\begin{figure}%
     \centering
@@ -144,7 +144,7 @@ What becomes clear at first glance is, that as mentioned, ORB generates only few
 	
 	
 
-\section{Calculation Time}
+\subsection{Calculation Time}
 
 	For each sequence and algorithms, the computational time was taken, that the algorithm took, to complete the computation of the sequence. 
 	The time needed for initialization was not considered for the absolut time. 
