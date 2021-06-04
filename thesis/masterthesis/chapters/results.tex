@@ -26,7 +26,7 @@ the computational complexity.
     \subfloat[\centering V203]{{\includegraphics[width=9cm]{img/traj_last.png} }}%
     \caption{
 	Ground truth flight path and evaluated flight path of each algorithm after alignment with the method of Umeyama in the x and y axis in meters. 
-	Left the sequence MH01, middle the sequence V102 and right the sequence V203 is displyed.
+	Left the sequence MH01, middle the sequence V102 and right the sequence V203 is displayed.
 	}%
     \label{fig:flight_path}%
 	\end{figure}
@@ -62,7 +62,7 @@ the computational complexity.
 	shows inconsistent results with a median positional error of more than 10cm and a large amount of errors greater than half a meter. 
 	
 	\fig{img/boxplot_dist.png}{Boxplot of all euclideans distances between the ground truth position of the keyframe and 
-	the evaluated position after alignment with the method of Umeyama. Outliers greater than 1.5 are not displayed for clearity reasons. 
+	the evaluated position after alignment with the method of Umeyama. Outliers greater than 1.5 are not displayed for clarity reasons. 
 	}{fig:boxplot_traj}{1}
 	
 	
@@ -100,8 +100,8 @@ What becomes clear at first glance is, that as mentioned, ORB generates only few
     \subfloat[\centering DSM]{{\includegraphics[width=7cm]{img/pointcloud_dsm} }}%
 	\qquad
     \subfloat[\centering DSO]{{\includegraphics[width=7cm]{img/pointcloud_dso} }}%
-    \caption{The groundtruth of the Pointcloud from Sequence V101 (white points) and the evaluated points by each algorithm (red points). 
-	The points in Figure (a) are wtice as large for better visability (ORB-SLAM generates only few points). 
+    \caption{The ground truth of the point cloud from Sequence V101 (white points) and the evaluated points by each algorithm (red points). 
+	The points in Figure (a) are twice as large for better visibility (ORB-SLAM generates only few points). 
 	}%
     \label{fig:pointcloud}%
 	\end{figure}
@@ -112,7 +112,7 @@ What becomes clear at first glance is, that as mentioned, ORB generates only few
 	in most sequences. 
 	
 	\begin{table}
-	\caption{Absolute Number of points and distance to closest point in the ground truth pointcloud in meter for each algorithm and sequence.}
+	\caption{Absolute number of points and distance to closest point in the ground truth point cloud in meter for each algorithm and sequence.}
 	\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
 	\hline
 	Sequence Name& ORB & DSM & DSO \\
@@ -139,7 +139,7 @@ What becomes clear at first glance is, that as mentioned, ORB generates only few
 	greater than 50 cm for certain sequences. 
 	
 	
-	\fig{img/pq_dist.png}{Boxplot of the eucleadian distances between an evaluated point and the closest point of the ground truth point cloud.
+	\fig{img/pq_dist.png}{Boxplot of the euclidean distances between an evaluated point and the closest point of the ground truth point cloud.
 	For computational feasibility, for each sequence and algorithm, 500 points for evaluation are sampled randomly}{fig:boxplot_pq}{1}
 	
 	
@@ -165,7 +165,7 @@ What becomes clear at first glance is, that as mentioned, ORB generates only few
 	% DSO enforce realtime not working
 
 	\begin{table}
-	\caption{Computation Time (excluded time needed for initialization) of each Sequence and Algorithm. In parenteses the 
+	\caption{Computation time (excluded time needed for initialization) of each sequence and algorithm. In parentheses the 
 	resulting computed frames per second are given.}
 	\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
 	\hline

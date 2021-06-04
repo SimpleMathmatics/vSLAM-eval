@@ -1,68 +1,110 @@
-\chapter{Full automated exploration system}
-
-\section{Existing systems}
-
-% Ziel festlegen!!!
+\chapter{Fully Automated Exploration System}
 	
-\section{suggested ROS framework} \label{rosframe}
+\section{Suggested ROS Framework} \label{rosframe}
 	
 	In this section a framework to test and build an entire automated system is suggested. This framework includes a 
-	simulated envorinment, that realisicly makes it possible, to navigate a drone within an simulated environment. The environment 
-	is based on the Roboter Operating System (ROS) and is completely simulated. 
+	simulated environment, that realistically makes it possible, to navigate a drone within an simulated environment. The environment 
+	is based on the Roboter Operating System (ROS).
 	
-	The basic idea of the framework can be seen in figure \ref{fig:autsys}. The main parts of the automated exploration system are the SLAM Algorithm
-	and the flight path planning algorithm, that work simultaniously. The general concept is that each of the algorithms takes the output of the other as 
+	Just like our proposed system, most other automated exploration systems are based on the combination of a SLAM algorithm and 
+	a path planning algorithm \cite{aut1} \cite{deep} \cite{accurat} \cite{aut2}. One example, where automated exploration with a drone is 
+	applied in real life is described in the work with the title A Fully-Autonomous Aerial Robot for Search and Rescue Applications
+in Indoor Environments using Learning-Based Techniques by Sampedro c. at al \cite{aut1}. They propose a complex framework targeted for search and 
+    rescue operations. One issue, that becomes clear and will not be treated in our work, is the weight of the hardware, that is necessary to perform all computations 
+	onboard. While the drone in Sampedro's work had to compute even more processes, such as running a constitutional neural network for object classification, 
+	amounted to a total weight of 3.2 kg. Even if the drones for our purpose will not be as heavy, processing the computations onboard of an ardrone 2.0, as 
+	it is used in our simulation, is impossible. When taking our proposed framework to a real life scenario, as it is also discussed in this chapter, 
+	the drone would have to hold a wireless connection (WIFI in case of the ARdrone 2.0) to a server, that does all the computations. Or, another drone would have to be used, in order 
+	to carry the hardware, that is needed for computation. 
+	
+	The basic idea of our framework can be seen in figure \ref{fig:autsys}. The main parts of the automated exploration system are the SLAM Algorithm itself
+	and the flight path planning algorithm, that work simultaneously. The general concept is that each of the algorithms takes the output of the other as 
 	input. 
 	
-	In the folling section the suggested ROS framework is proposed and described in detail. 
-	
-	\fig{img/aut_system.png}{Automated SLAM system}{fig:autsys}{0.8}
+	In the following section the suggested ROS framework is proposed and described in detail. 
 		
-	ROS stands for Roboter Operating System and as the name suggests, is a framework for a software infrastracture within a robot. With the right drivers installed, 
-	it can access and use the robots hardware and serves as a messenger system between robot components. Ros packages make it easy to 
-	reuse important functionalities. Gazebo on the other hand is a 3D dynamic simulator for robotics. It can accurately and efficiently simulate robots regarding
-	their physics. 
+	ROS stands for Roboter Operating System and as the name suggests, is a framework made to manage the software infrastructure within a robot. With the right drivers installed, 
+	it can access and use the robots hardware and serves as a messenger system between robot components. ROS packages make it easy to 
+	reuse important functionalities.
+
+	Gazebo on the other hand is an open-source 3D dynamic simulator for robotics. It can accurately and efficiently simulate robots regarding
+	their physics and behavior. While gazebo simulations of drones can be created from scratch, this work relies on a framework, that was introduced 
+	by the robotics department of the Technische Universität München (TUM). Details can be found in section \ref{tumsec}.
 	
 	The suggested ROS setup consists of different nodes. Each node runs a process where certain computations are performed. These computations are based on input data
-	and in most cases, also output data. Within ROS, data is shared and recieved over so called rostopics (in short topics). Each node can therefore publish the computed 
+	and in most cases, the nodes also create data to output to the system. Within ROS, data is shared and received over so called rostopics (in short topics), which is a simple publish-subscribe-pattern 
+	for network communication. Each node can therefore publish the computed 
 	data over a certain topic or it can recieve data from a certain topic by subscribing it. The frequency, the data is streamed to the system is also defined for each 
-	topic. The frequency the data is recieved can also be meanually defined for each subsription. 
+	topic. The frequency the data is received can also be manually defined for each subscription. 
 	
-	In figure \ref{fig:autros} the suggested setup is displayed. The system consists of six nodes. The ORB-SLAM-Algorithm, together with the Path planning algorithm, 
-	form the nodes with the most complex computations. To complete the system and to provide a setup, where path planning algorithms can easily be tested, 
-	the other four nodes play a crucial part in the setup.	The functionality of all nodes are described in detail in the next sections. 
+	\fig{img/aut_ros.png}{Overview over the suggested ROS framework for the simulated case}{fig:autros}{1}
 	
-	\fig{img/aut_ros.png}{Overview over the suggested ROS framework}{fig:autros}{0.95}
+	In figure \ref{fig:autros} the suggested setup for an automated exploration framework within a virtual environment is displayed. The system consists of five nodes. 
+	While the functionality of the ORB-SLAM node, the TUM simulation node and the fight path planning node may be derived by previous section, such as the upper part of 
+	this section and the introduction, the functionality of the other two nodes have not been introduced. 
+	
+	To take advantage out of the fact, that running these algorithms in a simulated environment provides the system with information about the exact position of the 
+	drone and the position of simulated environment, these information must be processed. This is done in the alignment node and the transformation and restriction node. 
+	
+	The alignment node computes the parameters, that are needed to transform the reference frame of the ORB-SLAM algorithm to the reference frame of the gazebo simulation. 
+	The actual transformation of the point cloud and the pose computed by ORB-SLAM are then performed in the transformation and restriction node. Additionally, this nodes 
+	restricts the searching space of the path planning algorithm to a finite area. With the help of these two nodes, the system is then able to: 
+	
+	\begin{itemize}
+	
+	\item{Identify the true scale of the point cloud}
+	\item{Confirm the correctness of the computed point cloud}
+	\item{Confirm the correctness of the computed trajectory}
+	\item{Limit the searching space of the path planning algorithm}
+	\item{Feed the path planning algorithm with collision information of the drone}
+	\item{Identify undiscovered spaces} 
+	
+	\end{itemize}
+	
+	
+	\fig{img/aut_ros_real.png}{Overview over the suggested ROS framework for the real life case}{fig:autrosreal}{1}
+	
+	Obviously, when testing the system in a real life environment, the ground truth of the position of the environment and drone are not available. 
+	Nevertheless, in order to get the true scale of the resulting point cloud, a modified framework is introduced additionally. This framework suggests an 
+	initialization process, that allows for an estimation of the position of the drone. 
+	
+	The functionality of all nodes are described in detail in the next sections. 
 	
 	Since the nodes are only dependent on each other in a way that they communicate over standardized messenges, they are independent of the programming language. 
-	This means that while the ORB-SLAM node is implemented in C++, the position estimation node and the scale recognition node are implemented in python with rospy. 
+	This means that while the ORB-SLAM node is implemented in C++, all nodes developed explicitly for this framework are implemented in python with rospy. 
 	
-	\subsection{TUM Simulation Node}
+	\subsection{TUM Simulation Node} \label{tumsec}
 	
-	Thus, with the tum\_simulation package you can navigate an AR.drone 1.0 and 2.0 in different worlds created with a gazebo node. This drone is eqipped with a bottom camera 
-	and a frot camera. The cameras each log their output to a ros topic. Additionally, message time stamps, the height sensor output, 
+	\fig{img/tum_sim.png}{Tum simulator setup. Source: http://wiki.ros.org/tum\_simulator}{fig:tumsim}{0.8}
+	
+	Thus, with the tum\_simulation package you can navigate an AR.drone 1.0 and 2.0 in different worlds created within gazebo. This drone is equipped with a bottom camera 
+	and a front camera. The cameras each log their output to a topic. Additionally, message time stamps, the height sensor output, 
 	battery percentage, rotation
-	velocity and accelaration are also logged to rostopics. While the drone can also be navigated using a playstation 3 controller, as shown in figure 
+	velocity and acceleration are also logged to topics. While the drone can also be navigated using a PlayStation 3 controller, as shown in figure 
 	\ref{fig:tumsim}, showing a section of the tum\_simulation package content structure, 
-	for an automated system, the drone should rather be addressed using the command line interface. For example 
-	the command shown in sourcecode listing \ref{lst:drone_cmd} will make the drone fly foreward. 
+	for an automated system, the drone should rather be addressed by publishing messages to the drone control topic (/cmd\_vel)
+	using the command line interface. For example 
+	by publishing messages of the class Twist, the drone can be navigated. With the command shown in listing \ref{lst:drone_cmd}, the drone is 
+	controlled to fly forward, as the linear translation vector points only in the x direction.  
 	
-	\begin{lstlisting}[language=bash, caption=drone navigation command, label=lst:drone_cmd]
+	\begin{lstlisting}[language=bash, caption= Drone navigation command, label=lst:drone_cmd]
+	# navigate the drone forward
     rostopic pub -r 10 /cmd_vel geometry_msgs/Twist  '{linear:  {x: 1.0, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'
 	\end{lstlisting}
 	
-	\fig{img/tum_sim.png}{tum simulator setup. Source: $http://wiki.ros.org/tum_simulator$}{fig:tumsim}{0.8}
+	In the next sections, the input and output topics of the drone are discussed. 
 	
 	\subsubsection{Input}
 	
 	\begin{enumerate}
 	\item{/cmd\_vel}
 	
-	This topic is explained in the upper section \ref{adafsf}.
+	As mentioned, the node is subscribed to the /cmd\_vel topic. Whenever a valid navigation message is received, the drone reacts accordingly, 
+	if it can. 
 	
 	\end{enumerate}
 	
-	\subsubsection{Output}
+	\subsubsection{Output}\label{simout}
 	
 	The drone has many sensors attached and more than thirty topics are logged to the system. However, here only the topics, that are of importance 
 	for the automation framework will listed. 
@@ -71,9 +113,9 @@
 	
 	\item{/ardrone/front/camera\_info}
 	
-	Over the /ardrone/front/camera\_info topic, the node publishes messenges of the class CameraInfo. These messenges include information about 
-	image dimension, timestamp and imformation about the camera specific values, described in section \ref{asdfasdf}. In the case of the ardrone 2.0,
-	the front camera generates images with 640x360 pixels and the instrinct camera matrix is given by: 
+	Over the /ardrone/front/camera\_info topic, the node publishes messages of the class CameraInfo. These messages include information about 
+	image dimension, timestamp and information about the camera specific values, described in section \ref{camcalib}. In the case of the ardrone 2.0,
+	the front camera generates images with 640x360 pixels and the intrinsic camera matrix is given by: 
 	
 	$$K = \begin{pmatrix} 374.6706070969281 & 0.0 & 320.5 \\
 						  0.0 & 374.6706070969281 & 180.5 \\ 
@@ -81,42 +123,48 @@
 	
 	\item{/ardrone/front/image\_raw}
 	
-	The node publishes the output images of the front camera. The metadata of the camera are provided in the topic /ardrone/front/camera\_info described above. 
+	The node publishes the actual output image data of the front camera in the /ardrone/front/image\_raw topic. The metadata of the camera are provided in the topic /ardrone/front/camera\_info described above. 
 	
 	\item{/ardrone/navdata}
 	
-	Messenges of the specially developed class Navdata are published to thig topic by this node. These messenges include information about 
-	pattery percentage of the drone, state of the drone (e.g hovering, flying, init, landing...), pressure, temperature, wind, velocity and 
-    some more. These messenges are also timestamped. 	
+	Messages of the specially developed class Navdata are published to this topic by this node. These messages include information about 
+	battery percentage of the drone, state of the drone (e.g hovering, flying, init, landing...), pressure, temperature, wind, velocity and 
+    some more information. These messages are also timestamped. 	
 	
 	\item{/ardrone/takeoff}
 	
 	As the name of the topic suggests, the drone takes off, when empty messenges are published to the thred. How this looks exactly can be found in 
-	listing \ref{asdfasdf}.
+	listing \ref{camcalib}.
 	
 	\item{/gazebo/model\_states}
 	
 	Gazebo provides the possibility to access the current pose of each model existing in a respective gazebo world. For example the ardronetestworld, 
-	that is displayed in figure \ref{adsfasdfasdf}, consists of the drone itself, several houses, a barrier etc.
+	that is displayed in figure \ref{fig:simfigs}, consists of the drone itself, several houses, a barrier etc.
 	
 	Therefore, the /gazebo/model\_states topic 
-	publishes the list of the pose, $x_i \in \text{SE}(3)$ of each model.
+	publishes the list of the pose, $x_i \in \text{SE}(3)$ of each model. However, in the ardronetestworld, only the drone is dynamic and important for this topic, all other models 
+	are static and therefore the pose will not change. 
 	
-	\item{/ardrone/collision}
+	\item{/gazebo/collision}
 	
-	This topic is explained in the upper section \ref{adafsf}.
+	It is possible to implement a contact sensor to a gazebo model.
+	However, currently the implementation has not yet been successful, as described in section \ref{frameissues}. 
 	
 	\end{enumerate}
 	
+	\subsubsection{Real-life framework}
+
+	For the real life framework, no gazebo simulation is running. Instead, a node processes the sensors of the drone within a node. The output 
+	topics of the drone are then limited to the drone sensors, as displayed in figure \ref{fig:autrosreal}
 	
 	
 	\subsection{ORB-SLAM Node}
 	
-	The ORB-SLAM algorithm runs in a seperate node. For the vocabulary file, needed for the bag of words approach, explained in section \ref{q23r134}, the 
-	standard vocabulary file proveded by the authers are considered. For the virtual environment, it might be useful to provide a vocabulary file 
-	generated for this particular purpuse, since in the simulation generated with the tum\_simulation, edjed might be of different shape, e.g paricularly sharp. 
+	The ORB-SLAM algorithm runs in a separate node. For the vocabulary file, needed for the bag of words approach, explained in section \ref{bagofword}, the 
+	standard vocabulary file provided by the authors are considered. For the virtual environment, it might be useful to provide a vocabulary file 
+	generated for this particular purpose, since in the simulation generated with the tum\_simulation, edged might be of different shape, e.g particularly sharp. 
 	
-	The node publishes the pose $x_i \in \text{SE}(3)$ and map\_points. Because the original ORB ROS implementation didn't have an option for publishing data and 
+	The node publishes the pose $x_i \in \text{SE}(3)$ and map points computed by the ORB-SLAM Algorithm. Because the original ORB ROS implementation didn't have an option for publishing data and 
 	projects, that implemented this functionality, these features had to be implemented. 
 	
 	\subsubsection{Input}
@@ -124,7 +172,7 @@
 	\begin{enumerate}
 	\item{/ardrone/front/image\_raw}
 	
-	This topic is explained in the upper section \ref{adafsf}.
+	This topic is explained in the upper section \ref{simout}.
 	
 	\end{enumerate}
 	
@@ -133,13 +181,13 @@
 	\begin{enumerate}
 	\item{/orb/pose}
 	
-	This topic publishes messenges of the class PoseStamped. This class includes a header, where the frame\_id and most importantly a timestamp can be provided. 
-	The pose is then given by x, y, and z position coordinates and the oriantation is given with quaternions coordinates. % erklärung hier
-	The topic is published at a frequncy of 30 Hz. 
+	This topic publishes messages of the class PoseStamped. This class includes a header, where the frame\_id and most importantly a timestamp can be provided. 
+	The pose is then given by x, y, and z position coordinates and the orientation is given with quaternions coordinates, that are discussed in section \ref{pose}. 
+	The topic is published at a frequency of 30 Hz. 
 	
 	\item{/orb/map\_points}
 	
-	This topic publishes messanges of the class PointCloud and also runs at a frequency of 30 Hz. The class consist of a vector of points of the 
+	This topic publishes messages of the class PointCloud and also runs at a frequency of 30 Hz. The class consist of a vector of points of the 
 	class Point32, all having x, y, and z coordinates containing 32 bit data. 
 	 
 
@@ -147,18 +195,17 @@
 	
 	\subsubsection{calculation}
 	
-	For the calculation of the pose and map\_points, the section \ref{asdfasdf} can be refered to. 
+	For the calculation of the pose and map points, the section \ref{orbcomp} can be referred to. 
 	
 
 	
 	\subsection{Alignment node}
 	
-	One benefit of implementing the automated system in a virtual environment is that the true position of the drone and the environment is known at 
-	all times. As mentioned in section{asdfasdf} gazebo provides the true positions of all models present in the gazebo world. Most importantly, this includes 
-	the pose of the drone. In order to transform the pointcloud that is computetd by the ORB-SLAM algorithm to the reference of the gazebo world, the estimated 
+	As mentioned in section{asdfasdf} gazebo provides the true positions of all models present in the gazebo world. Most importantly, this includes 
+	the pose of the drone. In order to transform the point cloud that is computed by the ORB-SLAM algorithm to the reference of the gazebo world, the estimated 
 	position by ORB-SLAM and the true position are again aligned with the method of umeyama. 
 	
-	This node computes this transformation and outputs the resulting transformation matrix, translation vector and scale. 
+	Therefore, this node computes the variables, that are needed for the transformation and outputs the resulting transformation matrix, translation vector and scale. 
 	
 	
 	\subsubsection{Input}
@@ -171,7 +218,7 @@
 	positions do not include a timestamp. Because a timestamp is needed for the alignment 
 	in order to only align the matching positions, another node was created to add a timestamp 
 	to the gazebo output positions. This node subscribes to the /gazebo/model\_states topic 
-	and privides the data with a timestamp. To keep the time error, that results in reading in 
+	and provides the data with a timestamp. To keep the time error, that results in reading in 
 	the topic data as small as possible, 
 	the node runs at an quite high frequency of 100 Hz. 
 	
@@ -180,7 +227,7 @@
 	
 	\item{/orb/pose}
 	
-	To align the groundtruth position and the estimated position of ORB, the /orb/pose topic published 
+	To align the ground truth position and the estimated position of ORB, the /orb/pose topic published 
 	by the ORB node described in section \ref{adsfaf} is subscribed to by the node. 
 	
 	\end{enumerate}
@@ -202,21 +249,26 @@
 	
 	\end{enumerate}
 	
-	\subsection{computations}
+	\subsubsection{Real-life framework}
+	
+	In case, the framework is tested in real life, because the /ardrone/true\_position topic will be unavailable, 
+	the node subscribes to the /drone\_position\_init topic, published by the position estimation node instead. 
+	
+	\subsubsection{Computations}
 	
 	If all necessary nodes are up and running, the data  logged to /orb/pose at 15Hz and to /ardrone/true\_position at 50 Hz is stored at two lists. This is done at 
 	a frequency of 10 Hz. Before aligning the points in the list, it is waited until 50 points are logged to each list. If only one list has reached 
-	the lengt of 50, new elements are stacked on top, while the oldest are removed. 
+	the length of 50, new elements are stacked on top, while the oldest are removed. 
 	
-	Then, the lists are culled in a way, that the minimum and maximum of the timestamp align. This is done in order to save uneccessary resources in the following.
+	Then, the lists are culled in a way, that the minimum and maximum of the timestamp align. This is done in order to save unnecessary resources in the following computations.
 	transformation step. Since the lists now may be of different length because they origin from topics with different logging frequency, 
-	for the shorter list, for each element the element from the other list with the smallest timedifference is matched. This assures that the points 
-	estimated by orb and from the voloity are measured at the same time. 
+	for the shorter list, for each element the element from the other list with the smallest time difference is matched. This assures that the points 
+	estimated by orb and from true position are measured at the same time. 
 	
-	Finally, the points are aligned by using the method of umeyame, as described in section \ref{qrq3414} and the scale, the rotation matrix and the translation
+	Finally, the points are aligned by using the method of Umeyama, as described in section \ref{umeyamasec} and the scale, the rotation matrix and the translation
     vector are published to the topic. 
 	
-	These computational steps are processed in the main callback loop of the respoctive file for the node. The function of the main loop is shown in listing \ref{lst:scaleup} in order 
+	These computational steps are processed in the main callback loop of the respective file for the node. The function of the main loop is shown in listing \ref{lst:scaleup} in order 
 	to provide further clarification of the computation to the reader. 
 	
 \begin{lstlisting}[language=python, caption=Main part of the scale estimation node, label=lst:scaleup]
@@ -282,51 +334,7 @@ def update_trans_variables(self):
 			self.trans_publisher.publish(t)
 \end{lstlisting}
 	
-	
-	\subsection{Scale Recognition Node}
-	
-	This node estimates the true scale of the pointcloud. This is beneficial to later use the pointcloud for real life purposes. 
-	This is done by aligning the estimated position based on the velocity of the drone in the initialization process and the 
-	estimated position of the drone by the ORB-SLAM Algorithm. If the scale has been calculated, the node logs the constant scale 
-	to the topic. Note, that the scale is still just an estimation, since the scale may drift while the ORB-SLAM Algorithm continues
-	running. This is called scale drift.
-	
-	\subsubsection{Input}
-	
-	\begin{enumerate}
-	\item{/drone\_position\_init}
-	
-	This topic is explained in the upper section \ref{adafsf}. 
-	
-	\item{/orb/pose}
-	
-	This topic is explained in the upper section \ref{adafsf}.
-	
-	\end{enumerate}
-	
-	\subsubsection{Output}
-	
-	\begin{enumerate}
-	\item{/scale\_estimation}
-	
-	The node publishes a topic called /scale\_estimation, which is a float64 representing the calculated scale. If the scale is not yet computed, nothing is published. 
-	
-	\end{enumerate}
-	
-	\subsubsection{computation}
-	
-	If all nodes are up and running, the data logged to /orb/pose at 15Hz and to /scale\_estimation at 10 Hz is stored at two lists. This is done at 
-	a frequency of 10 Hz. Before aligning the points in the list, it is waited until the 25 points are logged to each list. If only one list has reached 
-	the lengt of 25, new elements are stacked on top, while the oldest are removed. 
-	
-	Then, the lists are culled in a way, that the timestamps of the oldest and newest messages are aligned. Even though the scale is only computed once, 
-	this saves unneccessary resource. Since the lists now may be of different length because they origin from topics with different logging frequency, 
-	for the shorter list, for each element the element from the other list with the smallest timedifference is matched. This assures that the points 
-	estimated by orb and from the voloity are measured at the same time. 
-	
-	Finally, the points are aligned by using the method of umeyame, as described in section \ref{qrq3414} and the scale is published to the topic. 
-	
-	These computational steps are processed in the main callback loop of the respoctive file for the node. The function of the main loop is shown in listing.
+
 	
 	\subsection{Position Estimation Node}
 	
@@ -390,7 +398,7 @@ def update_trans_variables(self):
 	
 	This recursive methodoly is shown in figure \ref{fig:positionfinding}
 	
-	\fig{img/pos_estimation.png}{Calculation method for estimation the position in the initialization porcess in order to find the 
+	\fig{img/pos_estimation.png}{Calculation method for estimation the position in the initialization process in order to find the 
 	true scale.}{fig:positionfinding}{0.8}
 	
 	The implementation is easily deployed and the update function, that is running in the main loop can be seen in listing \ref{lst:posupdate}. 
@@ -437,7 +445,7 @@ if x_vel is not None and y_vel is not None and z_vel is not None:
 	
 	The restriction of the searching space is useful, because the aim the path planning algorithm is to explore unseen areas in in the searching space. Obviosly, 
 	since the path planning algorithm relys exclusivly on the pointcloud, unseen areas are then defined as areas, where no points are available. The gazebo world, 
-	displayed in figure \ref{asdfadsf}, exceeds in unlimited space and therefore will cause the path finding algorithm to navigate in infinite space. Also the ground, sides and 
+	displayed in figure \ref{fig:simfigs}, exceeds in unlimited space and therefore will cause the path finding algorithm to navigate in infinite space. Also the ground, sides and 
 	sky of the world have no texture, and will make it impossible to find features and therefore generate points for the ORB-SLAM-Algorithm. Unfortunately, 
 	as described in issue \ref{dsf}, no other world is yet available. Thus, adding points to 
 	limit the searching space is crucial. This is the reason why most navigation algorithm are constructed for indoor navigation \ref{cite:asdf}. 
@@ -489,7 +497,7 @@ if x_vel is not None and y_vel is not None and z_vel is not None:
 	Then, 10000 points for each side of the hull of $\Omega$ are added to the generated point cloud by ORB, after it was transformed. This can simply been achieved 
 	in three consecutively for loops. This is shown in listing \ref{lst:const} for the upper and lower restrictions. These loops are run for the sides respectively. 
 	
-	\begin{lstlisting}[language=python, caption=Adding upper and lower restrictions to pointcloud. , label=lst:const]
+	\begin{lstlisting}[language=python, caption= Adding upper and lower restrictions to point cloud. , label=lst:const]
 	
 # bottom and top 
 for x_oi in np.linspace(-30, 30, 100): 
@@ -600,6 +608,7 @@ n & \textrm{for } n \textrm{ newly explored points by the ORB-SLAM-Algorithm, af
 	
 	\item{Monte Carlo}
 	
+	% image based servoing
 	% computation time studie...vermutlich nicht annähernd real time...omega reduzieren
 	
 	\item{Reinforcement learning}
@@ -621,8 +630,6 @@ n & \textrm{for } n \textrm{ newly explored points by the ORB-SLAM-Algorithm, af
 	$\gamma$ is called the discount factor and is a value between 0 and 1 and defines, how much weight is given to the reward for steps that are further away from the current one. 
 	For example, if $\gamma = 0.8$, the third term of the cummulated sum is only weihted with ${0.8}^3 = 0.512$. Thus, the more relyable the algorithm 
 	and the chosen reward funktion is, the higher $\gamma$ can be chosen, and therefore the better the algorithm plans the navigation into the future. 
-	
-	
 	
 	The exact computational steps are shown in algorithm \ref{qlearn}. 
 	The algorithm 
@@ -699,7 +706,7 @@ optimal trajectories: smoother movements and less spins. \cite{deep}
 	
 	The project is publicly available under the name tum simulator test.
 	
-	\begin{lstlisting}[language=bash, caption=Launching the simulated environment, label=lst:sim_cmd]
+	\begin{lstlisting}[language=bash, caption= Launching the simulated environment, label=lst:sim_cmd]
 	
 # launch the gazebo simulation
 roslaunch cvg_sim_gazebo ardrone_testworld.launch
@@ -724,7 +731,7 @@ rostopic pub -1 /ardrone/takeoff std_msgs/Empty
 	applications, only the path planning algorithm based on the resulting point cloud is missing. However, multiple solutions for such algorithms 
 	exist \cite{path}, appying it on the system is not part of this paper and will be done in further research. 
 
-	\subsection{Known Issues}
+	\subsection{Known Issues} \label{frameissues}
 	
 	\begin{enumerate}
 	
@@ -743,7 +750,7 @@ rostopic pub -1 /ardrone/takeoff std_msgs/Empty
 	\ref{dsfadf}, which restriction points to the pointcloud. 
 	
 	
-\begin{lstlisting}[language=bash, caption=launching different world, label=lst:worldchange]
+\begin{lstlisting}[language=bash, caption= Launching different world, label=lst:worldchange]
 	
 # launch different world named land_station1
 roslaunch cvg_sim_gazebo land_station1.launch

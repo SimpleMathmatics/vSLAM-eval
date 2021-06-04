@@ -1,40 +1,57 @@
-\chapter{Evaluation and Selection of vSLAM Algorithm}
+\chapter{Evaluation of the vSLAM Algorithms}
 \section{Related Work}
 
 \subsection{Introduction and History of SLAM}
 
-SLAM is one of the most emerging research topics in robotics \cite{slamintro}. It is applied in various applications, such as in augmented reality to estimate the camera pose,
-autonomous navigation and computer vision-based online 3D modeling \cite{evolved} \cite{dso}.
-The problem can be defined in a probabilistic way. The goal is to compute 
+SLAM algorithms have to solve a chicken-egg-problem, since in order for the robot to localize itself within a unknown environment, 
+it needs a map. However, for building a map, the robot needs to localize itself within it \cite{chicken}. Until today, multiple 
+different solutions for the problem were developed. 
 
-$$\mathbb{P}\left(m_{t+1},x_{t+1}|z_{1:t+1},u_{1:t}\right)$$
+Today, the problem can be formally defined in a probabilistic way. The goal is to compute 
 
-Where, as can be found in figure \ref{fig:slamover}, $m_{t+1}$ is the map (pointcloud of the surroundings) at timepoint $t+1$, $x_{t+1}$ the 
-camera pose and position at timepoint $t+1$, $z_{1:t+1}$ all observations made to this timepoint and $u_{1:t}$ all historic control input. However, most
-modern SLAM methods don't require the control input anymore. 
+\begin{equation}\label{prob}
+\mathbb{P}\left(m_{t+1},x_{t+1}|z_{1:t+1},u_{1:t}\right),
+\end{equation}
 
-\fig{img/slamoverview.png}{Overview of the SLAM concept. Source: \cite{hist2}}{fig:slamover}{0.6}
+where, $m_{t+1}$ is the map (point cloud of the surroundings) at timepoint $t+1$, $x_{t+1}$ the 
+camera orientation and position at timepoint $t+1$, $z_{1:t+1}$ all observations made to this timepoint and $u_{1:t}$ all historic control input. 
+In other words, a map and a series of positions should be computed, that fit the seen environment and the control inputs in the most likely manner. 
+However, most
+modern SLAM methods do not require the control input anymore but rather predict the next position with a motion model and validate it with an 
+optimization process. \cite{dso} \cite{orb}. 
+This problem overview is displayed in figure \ref{fig:slamover}. 
+
+\fig{img/slamoverview.png}{Overview of the SLAM concept. Source: \cite{hist2}}{fig:slamover}{0.8}
 
 With their work on the representation and estimation of spatial uncertainty \cite{hist1}
-Smith et al created the first relevant work in the field on SLAM in 1986. However, due to lacking computational recources, the engagement in this topic stayed aminly
+Smith et al created the first relevant work in the field on SLAM in 1986. However, due to lacking computational resources, the engagement in this topic stayed mainly
 on a theoretical level. 
 
-
   \begin{quote}
-   The result of this conversation was a recognition that
-	consistent probabilistic mapping was a fundamental problem
-	in robotics with major conceptual and computational issues
-	that needed to be addressed. \cite{hist2}
+	 Work by Smith and
+Cheesman and Durrant-Whyte established a statistical basis for describing relationships between landmarks and
+manipulating geometric uncertainty. A key element of this
+work was to show that there must be a high degree of correlation between estimates of the location of different landmarks in a map \cite{hist2}.
   \end{quote}
-  
-This is because already then it was recognized, that camera pose and landmark positions had to be updated when moving further or optimizing the map and is a huge computational 
-effort as the map grows. 
 
-As time progressed, so did the computational resources and the algorithms became more advanced. Huge evolvements were achieved after 2010 \cite{evolved}, mainly because of the increased
-use of augmented reality application, that may rely on real time vSLAM algorithms. The developed vSLAM methods can be devidet into two different classes: direct and feature based methods.
+Their work suggested for the first time, that the estimation should be based on a large vector, containing all landmark observations, as shown in the formal definition of the problem in 
+expression \label{prob}.
 
-Direct algorithms use the entire image as input in order to compute the term in quotation \ref{eq:goal}. Therefore, the term is computed by optimizing the photometric error. 
-This is the error, that results from comparing the intensities of each pixel after transformation (optimization) \cite{dso}. 
+The first recognizable developed SLAM algorithms relied on optimization methods based on an extended Kalman filter, which is a non-linear state estimation approach
+ by relying on a joint distribution of all measurements \cite{evolved}. The first monocular vSLAM algorithm, developed in 2003, 
+ is based on the extended Kalman filter and is called MonoSLAM \cite{mono}. 
+ 
+ The computational cost of the MonoSLAM algorithm, and most other vSLAM algorithms grows in proportion to the number of observed features, making it very hard to obtain real-time 
+ computation for medium or large environments \cite{envolved}. Obviously, an algorithm runs in real-time, when 
+ the algorithm can process the images, that are fed to it, just as fast as they are produced. Ideally, it should 
+ be running recognizably faster on average, since processing time per image can fluctate. 
+
+ In 2007, PTAM contributed with improvements by not running the tracking and mapping processes
+ sequentially, like previous approaches, but rather to run these processes in parallel on two distinctive threads \cite{ptam}. 
+ 
+ Then, more and more direct monocular visual vSLAM algorithm were developed. Unlike previous feature-based approaches, direct algorithms use the entire image as input in order to compute the term in expression \ref{prob}. 
+ Therefore, the term is computed by optimizing the photometric error, which is the error, that results from comparing the intensities 
+ of each pixel after transformation \cite{dso}.
 
   \begin{quote}
 	One of the main benefits of a direct formulation is that it
@@ -42,19 +59,38 @@ This is the error, that results from comparing the intensities of each pixel aft
 	allowing for a more finely grained geometry representation (pixelwise inverse depth). \cite{dso}
   \end{quote}
 
-Feature based methods on the other hand, compute features for each frame, that serve as imput for further computation. These features usually are subsets of pixels, that have remarkable 
-intensities and arrangement, such as corners (landmarks). These methods evaluate the upper term by computing the geometric error, since the feature positions are geomtric 
-quantities. A main advantage of feature based methods is the rubostness over geometric distortions present in every-day-cameras \cite{dso}. 
+Feature based methods on the other hand, compute features for each frame, that serve as input for further computation. These features usually are subsets of pixels, that have remarkable 
+intensities and arrangements, such as corners (landmarks). These methods evaluate the upper term by computing the geometric error, since the feature-positions are geometric 
+quantities. A main advantage of feature based methods is the rubustness over geometric distortions present in every-day-cameras \cite{dso}. 
 
-Of all existing vSLAM algorithms, this work considers DSO, DSM and ORB SLAM for the evaluation of beeing a suited candide for flying a drone autonomously. This desicion is based on 
-other research results in this area. 
+While multiple evaluation studies exist \cite{eval1} \cite{eval2} \cite{pq} \cite{orb}, \cite{dso}, the comparison of the results is difficult. 
 
-% hier die gründe auflisten.
-% dso nur subsample der daten -> redundant
+  \begin{quote}
+	One of the main benefits of a direct formulation is that it
+	does not require a point to be recognizable by itself, thereby
+	allowing for a more finely grained geometry representation (pixelwise inverse depth). \cite{align1}
+  \end{quote}
+
+On the one hand, the difficulty lies in the dependency of the results on the choice of the 
+alignment method, that transforms the resulting output of the vSLAM algorithm to the reference frame of the ground truth. 
+A different alignment function will result in a different result. This even led to a proposal of an evaluation method, that is not dependent on the ground truth reference 
+frame \cite{align1}. However, the proposed method has to be computed by performing manual steps, 
+and therefore never became the standard.
+
+ Also, the usage of different error metrices, the usage of different benchmark datasets and difference in computational power of the systems,
+ on which the evaluation took place, can cause differences in results. 
+Finally, the accuracy of the point cloud, which is a crucial part for our proposed framework in the second part of this work to function correctly, has rarely been studied \cite{pq}. 
+
+Therefore, in this chapter, DSO-, DSM- and ORB SLAM are compared using the performance indicators explained in section \ref{methsec}. 
 
 
-In the following section, an overview over how the algorithms work is given for each method. However, in order to understand this section, it is crutial to clarify basic definitions 
-and vocabulary used in SLAM
+Of all existing vSLAM algorithms, this evaluation considers DSO-, DSM- and ORB SLAM for the evaluation of being a suitable candidate for the autonomous exploration task.
+ORB-SLAM was considered, because it showed the very good results in different evaluations \cite{eval1} \cite{eval3}. 
+DSO-SLAM yield also good accuracy \cite{eval3}, and states to be able to track through scenes with very little texture, where feature based methods fail \cite{dso}.
+Finally, DSM states to be the most accurate direct SLAM method \cite{dsm}.   
+
+In the following section, an overview over how the algorithms work is given for each method. In order to understand this section, it is crucial to clarify basic definitions 
+and vocabulary used in SLAM first. 
 
 	\subsection{Definitions}
 		
@@ -66,10 +102,13 @@ and vocabulary used in SLAM
 	
 		\subsubsection{Covisibility Graph}
 		
+		Some algorithms create a covisibility graph in order to link keyframes and gain more information about the environment by having a different representation. 
+		In a covisibility graph, nodes are representing features and edges the covisibility between them. 
+		This can help the algorithms to perform optimizations and loop closing as explained in the following section.
 		updating the edges resulting from the shared map
 		points with other keyframes.
 		
-		\subsubsection{Group of Rigid Transformations in 3D}
+		\subsubsection{Group of Rigid Transformations in 3D}\label{pose}
 		
 		$\text{SE}(3)$ is the group of rigid transformations in 3D space \cite{se3}. Each Matrix $ T \in \mathbb{R}^{4x4}$ with 
 		
@@ -79,46 +118,59 @@ and vocabulary used in SLAM
 		0  & 1 \\ 
 		\end{array} \right]$$
 		
-		and $ R \in \mathbb{R}^{3x3}$ beiing a rotation matrix and $ t \in \mathbb{R}^{3}$ a translational vector, is an element of $\text{SE}(3)$.
+		and $ R \in \mathbb{R}^{3x3}$ being a rotation matrix and $ t \in \mathbb{R}^{3}$ a translational vector, is an element of $\text{SE}(3)$.
 		
-		% add quantinion.
+		Sometimes, instead of representing the orientation by the rotation matrix $R$, the orientation is given by so called quaternions $q \in \mathbb{R}^4$. 
+		The transformation between these two standards is possible. 
 		
-		\subsubsection{Pointcloud}
+		\subsubsection{Point cloud}
 		
-		When we speak of pointcloud, we simply mean a formation of points in the threedimensional space, though having
-		an x y and z coordinate. Later in the evaluation of the algorithms, to save these pointclouds, the PLY format has 
+		When we speak of point cloud, we simply mean a formation of points in the three-imensional space, though having
+		an x y and z coordinate. Later in the evaluation of the algorithms, to save these point clouds, the PLY format has 
 		been chosen. 
 		
-		\subsubsection{Camera Calibration}
+		\subsubsection{Camera Calibration and Distortion} \label{camcalib}
+		
+		F a SLAM algorithm to work with multiple camera types, such as fisheyes cameras, the camera input has to standardizes. Therefore, different 
+		parameters must be provided. These parameters include 
+		
+		\begin{itemize}
+		\item{The image size}
+		\item{The focal lengths (x and y)}
+		\item{The optical centers (x and y)}
+		\item{The distortion parameters}
+		\end{itemize}
+		
+		The calculations of the resulting transformation in order to gain a standardized image, can be found in the OpenCV documentation. 
 
-	\subsection{ORB-SLAM}
+	\subsection{ORB-SLAM}\label{orbcomp}
 	
 	ORB SLAM is a feature based, state of the art slam method. The first version was published in 2015 \cite{orb}. 
-	Here, an overview of the functionality of ORB SLAM is provided. The Algorithms runs on three threats simultanously.
-	Each thread performes one of the following tasks: Tracking, Local Mapping and Loop Closing. An overview over the tasks can be found 
-	in figure \ref{fig:orb_fig}. The explaination of these system components are described in the following subsections. 
-	A more detailed explaination can be found in the paper of Raul Mur-Artal et al \cite{orb}.
+	Here, an overview of the functionality of ORB SLAM is provided. The Algorithms runs on three threats simultaneously.
+	Each thread performs one of the following tasks: Tracking, Local Mapping and Loop Closing. An overview over the tasks can be found 
+	in figure \ref{fig:orb_fig}. The explanation of these system components are described in the following subsections. 
+	A more detailed explanation can be found in the paper of Raul Mur-Artal et al \cite{orb}.
 	
-	\fig{img/orb_slam_overview.png}{Overview of the system components extracted from \cite{orb}}{fig:orb_fig}{0.6}
+	\fig{img/orb_slam_overview.png}{Overview of the system components extracted from \cite{orb}}{fig:orb_fig}{0.7}
 	
 	\subsubsection{Tracking}
 	
-	The tracking component determines the localization of the camera and decides, when a new keyframe is beeing inserted.
+	The tracking component determines the localization of the camera and decides, when a new keyframe is being inserted.
 	As it is shown in figure \ref{fig:orb_fig}, the tracking is performed in four steps.
 	
 	\begin{enumerate}
 	\item Feature Extracting 
 	
 	Features are extracted using Oriented FAST and Rotated BRIEF \cite{orb_feat}. This method starts by searching for 
-	FAST (Features from Accelerated and Segments Test). Herefor, for each pixel x in the image, a circle of 16 pixels around that pixels
-	is considered and checked if at least eight of these 16 pixels have major brightness differences. If so, the pixel x is considered as 
-	a keypoint, since it is likely to be an edge or corner. This is repeated again and again after downsizing the image up to a scale of eight. 
-	To extract features evenly distributed over the image, it is devided into a grid, trying to extract five features per cell. 
+	FAST (Features from Accelerated and Segments Test). Therefor, for each pixel x in the image, a circle of 16 pixels around that pixel
+	are considered and checked if at least eight of these 16 pixels have major brightness differences. If so, the pixel x is considered as 
+	a keypoint, since it is likely to be an edge or corner. This is repeated multiple times after downsizing the image up to a scale of eight. 
+	To extract features evenly distributed over the image, it is divided into a grid, trying to extract five features per cell. 
 	Extracting features this way, makes the algorithm more stable to scale invariance. 
-	Next the orientation of the extracted feature is calculated using a intensity centroid. 
+	Next the orientation of the extracted feature is calculated using an intensity centroid. 
 	Finally the features are converted into a binary vectors (ORB descriptor) using a modified version, which is more robust to rotation, of BRIEF descriptors (Binary robust independent elementary feature).
-	% wenn ich noch mehr brauch kann ich hier noch was adden. These ORB descriptors are then used for all feature matching tasks. 
-	
+	These ORB descriptors are then used for all feature matching tasks. 
+	% wenn ich noch mehr brauch kann ich hier noch was adden. 
 	
 	
 	\item Initial Pose Estimation
@@ -131,7 +183,7 @@ and vocabulary used in SLAM
 	When the camera pose is estimated, map point correspondences are searched in 
 	the local map, containing keyframes that contain the observed map points and
 	the keyframes from the covisibility graph. The pose is then corrected with all
-	matched mappoints. 
+	matched map points. 
 	
 	% wenn ich noch mehr brauche, hier weitermachen.
 	
@@ -146,29 +198,25 @@ and vocabulary used in SLAM
 	
 	\end{enumerate}
 	
-
-	
 	\subsubsection{Local Mapping}
 	
 	Whenever a new Keyframe $K_i$ is inserted, the map is updated. 
 	
 	
 	\begin{enumerate}
-	\item{KeyFrame Insertion}
+	\item{Keyframe Insertion} \label{bagofword}
 	
 	The keyframe is inserted in the covisibility graph. Then the spanning tree
-	is updated using using the keyframe with the most common points with $K_i$.
+	is updated using the keyframe with the most common points with $K_i$.
 	Finally the keyframe is represented as a bag of words using the DBoW2 implementation. 
-	Therefor, the image is saved by the number of occurances of features found in a a predefined
+	Therefor, the image is saved by the number of occurances of features found in a predefined
 	vocabulary of features. When the vocabulary is created with images general enough, 
 	it can be used for most environments.
-	
-	% cite
 
 	
 	\item{Recent Map Points Culling}
 	
-	A mappoint is removed from the map, when it is found in more than 
+	A map point is removed from the map, when it is found in more than 
 	25/% in the frames where it is predicted to be visible. Also, 
 	it must be observed from more than two keyframes if more than one keyframe 
 	has passed from map point creation. 
@@ -178,20 +226,20 @@ and vocabulary used in SLAM
 	A map point is created by calculating the triangulation of the connected
 	keyframes in the covisibility graph. For each map point, the 3D coordinate 
 	in the world coordinate system, its ORB descriptor, the viewing direction, 
-	the maximim and minimum distance at which the point can be observed is stored. 
+	the maximum and minimum distance at which the point can be observed is stored. 
 	
 	\item{Local Bundle Adjustment}
 	
 	The keyframe poses $T_i \in \text{SE}(3)$ and Map Points $X_j \in \mathbb{R}^{3}$ 
-	are optimized by minizing the reprojection error to the matched keypoints $x_{i,j} \in \mathbb{R}^{2}$.
+	are optimized by minimizing the reprojection error to the matched keypoints $x_{i,j} \in \mathbb{R}^{2}$.
 	The error is computed by the following term:
 	
 	$$ e_{i,j} = x_{i,j} - \pi_i\left(T_i, X_j\right) $$. 
 	$i$ is the respective Keyframe and j the index of the map Point. 
 	$\pi_i$ is a projection function, calculation a transformation 
-	to project all keypoints on mappoints by minimizing a cost function, that
+	to project all keypoints on map points by minimizing a cost function, that
 	can be found in \cite{ba}.
-	% citat anfang
+
 	\begin{quote}
 	In case of full BA
 	(used in the map initialization) we optimize
@@ -200,16 +248,16 @@ and vocabulary used in SLAM
 	all points included in the local area
 	are optimized, while a subset of keyframes is fixed. In
 	pose optimization, or motion-only BA, all
-	points are fixed and only the camera pose is optimized.
+	points are fixed and only the camera pose is optimized \cite{orb} .
 	\end{quote}
 	At this point, a local BA is performed.
 	
 	\item{Local Keyframe Culling}
 	
-	With difference to other SLAM algorithm, ORB slam delets redundant 
+	With difference to other SLAM algorithm, ORB slam deletes redundant 
 	keyframes, which decreases computational efforts, since computational
 	complexity grows with the number of keyframes. All keyframes are deleted, 
-	where at least 90 percest of the map points can be found in at least three other 
+	where at least 90 percent of the map points can be found in at least three other 
 	keyframes. 
 	
 	
@@ -222,31 +270,45 @@ and vocabulary used in SLAM
 	\begin{enumerate}
 	\item{Loop Candidates Detection}
 	
-	First the similarity of $K_i$ to its neighbours in the covisibilty
+	First the similarity of $K_i$ to its neighbors in the covisibilty
 	graph is computed by using the bag of words representation and a 
 	loop candidate $K_l$ might be chosen. 
 	
 	\item{Similarity Transformation}
 	
-	In this step the transformation is computet, to map the map points
-	from $K_i$ on $K_l$. Since scale can drift, also the scale is computet
-	in addition to the rotation matrix and translation using the mothod of horn. 
+	In this step the transformation is computed, to map the map points
+	from $K_i$ on $K_l$. Since scale can drift, also the scale is computed
+	in addition to the rotation matrix and translation using the method of horn. 
 	
 	
 	\item{Loop Fusion}
 	
 	Here, duplicated map points are fused and the keyframe pose $T_\omega$ is corrected by the transformation
 	calculated in the previous step. All map points of $K_l$ are projected in $K_i$. 
-	All keyframes affected by the fusion will update the edjes (shared map points) in the 
+	All keyframes affected by the fusion will update the edges (shared map points) in the 
 	covisibilty graph. 
 	
 	\item{ Essential Graph Optimization}
 	
-	Finally the loop closing error is distributed over the essential graph. 
+	Finally, the loop closing error is distributed over the essential graph. 
 	
 	% essential graph hier noch beschreiben. 
 	
 	\end{enumerate}
+	
+	\subsubsection{Complement}
+	
+	Please note, that this is the base model of ORB-SLAM. Multiple amendments, forks and merge requests exists, either made by the creators themselves, 
+	or by external developers. Though it was slighly abbreviated for our purposes, in the evaluation part of this work, ORB-SLAM3 is used. 
+	
+	The main feature that was added in this version and also affect the result, is the possibility to create multiple maps within one session. 
+	If the tracking is lost, simply a new map is created. When places are then revisited, the maps get merged and the tracking can therefore 
+	resumed normally.  This way, good performance results can be yielded, even with long periods of poor visual information \cite{orb3}. 
+	
+	In the second part of this work, ORB-SLAM2 was used. This is simply due to the fact, that compiling other versions on the platform described in the 
+	second chapter failed. However, for the monocular usage, to the authors best knowledge, no main differences are made to the above-described version. 
+	
+	%#############################################################################################################################################
 
 	\subsection{DSO-SLAM}
 	
@@ -254,73 +316,87 @@ and vocabulary used in SLAM
 	
 	\subsubsection{Model Overview}\label{samemodel}
 	
-	The model optimzes the photometric error over a window of recent frames. 
+	The model optimizes the photometric error over a window of recent frames. 
 	
-	The camera is calibrated in two different ways. First a projection function is computed, considering the focal length and the pricipal point, 
+	The camera is calibrated in two different ways. First a projection function is computed, considering the focal length and the optical centers, 
 	in order to map a pixel point in the image on a 3D map point (and the other way around). Secondly, a photometric camera calibration is applied. 
 	This calibration accounts for camera specific non-linear response functions, that map scene irradiances on pixel intensities on the one hand and 
-	camera specific lens attenuations on the other hand. 
+	camera specific lens attenuation on the other hand. 
 	
 	The model relies on minimizing the photometric error. This error over all frames is given by
 	
-	$$E_{\text{photo}}:= \sum_{i \in \mathcal{F}} \sum_{p \in \mathcal{P}_i} \sum_{j \in \text{obs}\left(p\right)} E_{pj}$$,
+	\begin{equation}
+	E_{\text{photo}}:= \sum_{i \in \mathcal{F}} \sum_{p \in \mathcal{P}_i} \sum_{j \in \text{obs}\left(p\right)} E_{pj},
+	\end{equation}\label{targetterm}
+	
 	
 	where $\mathcal{F}$ is the set of all frames, $\mathcal{P}_i$ the set of all pixel in frame $i$ and $\text{obs}\left(p\right)$
 	the set of indices of frames, where the point $p$ occurs. $E_{pj}$ on the other hand is the difference in pixel intensities, calculated 
 	by the huber norm, after mapping the pixels on each other and applying an additional affine brightness transfer function. Also, $E_{pj}$ does not 
-	include comparing the point $p$, but also computes the pixel intensitie difference of eight pixel neighbors of $p$, arranged in a spread pattern. 
+	only include comparing the point $p$, but also computes the pixel intensity difference of eight pixel neighbors of $p$, arranged in a spread pattern. 
+	This pattern is shown in figure \ref{fig:pattern}. 
 	
-	% hier ist noch viel zu schreiben
+	\begin{quote}
+	
+Our experiments have shown that 8 pixels, arranged in a
+slightly spread pattern [...] give a good trade-off
+between computations required for evaluation, robustness
+to motion blur, and providing sufficient information
+
+	\end{quote}
+	
+	\fig{img/pattern.png}{Neighbor pixels considered for the photometric error calculation. Source: \cite{dso}}{fig:pattern}{0.5}
 	
 	\subsubsection{Visual Odometry Front-End}
 	
-	The front end determine the sets $\mathcal{F}$, $\mathcal{P}_i$ and $\text{obs}\left(p\right)$. Also it initializes all parameters required to calcualte the term \ref{eq:test}. 
+	The front end determine the sets $\mathcal{F}$, $\mathcal{P}_i$ and $\text{obs}\left(p\right)$. Also it initializes all parameters 
+	required to calculate the term \ref{targetterm}. 
 	Finally it decides, when to remove points, outliers and keyframes. Frame and point management are closer described in the following. 
 	
 	\begin{enumerate}
-	\item{Frame Managemant}
+	\item{Frame Management}
 	
 	If a new keyframe is created, all map points are mapped into it. In case the root mean squared error of the current frame is more than twice as high than the one before, 
-	direct image alignment is assumed to have failed and initialization is tried again. The algorithm tries, to always work with seven active keyframes. All computations are 
+	direct image alignment is assumed to have failed and initialization is tried again. The algorithm tries to always work with seven active keyframes. All computations are 
 	made in reference to those keyframes. 
 	
 	For creating a new keyframe, 5-10 frames per second are considered for creation. A keyframe must meet all of the following requirements: 
 	
 	\begin{enumerate}
 	\item{}
-	the field of view changes.
+	The field of view changes.
 	\item{}
 	Camera translation causes occlusions. % beschreibung occlusions
 	\item{}
 	Camera exposure time changes significantly. 
 	\end{enumerate}
 	
-	When deciding when to marginalize a keyframe, following roles are applied to the active keyframes $I_1$,...,$I_7$, with $I_1$ beeing the most recent: 
+	When deciding when to marginalize a keyframe, following roles are applied to the active keyframes $I_1$,...,$I_7$, with $I_1$ being the most recent: 
 	
 	\begin{enumerate}
 	\item{}
-	$I_1$ and $I_2$ are always kept
+	$I_1$ and $I_2$ are always kept.
 	\item{}
-	keyframes, whos amount of points contained in $I_1$ is less then 5 percent are marginalized
+	keyframes, whose number of points contained in $I_1$ is less then 5 percent are marginalized.
 	\item{}
-	If still too many keyframes are active, the ones having the largest distance to $I_1$, or the worst distribuited in 3D space are removed. 
+	If still too many keyframes are active, the ones having the largest distance to $I_1$, or the worst distributed in 3D space are removed. 
 	\end{enumerate}
 	
-	\item{Point Managemant}
+	\item{Point Management}
 	
 	DSO always tries to keep 2000 active points in the map. The first step is select candidates points of the frame. To obtain equally 
 	distributed points, the image is split into blocks. In each block, the point with the largest gradient of pixel intensity is selected, if 
-	it is greater than a threshhold, which is computed by adding seven to the overall median of the gradients. This is repeated twice while 
-	decreasing the threshhold and doubling the block size, in order to also include points with weaker gradient. 
-	% vlt hier noch gradient erklären. 
+	it is greater than a threshold, which is computed by adding seven to the overall median of the gradients. This is repeated twice while 
+	decreasing the threshold and doubling the block size, in order to also include points with weaker gradient. 
+	By gradient, simply the change of pixel intensities to all neighbors is meant. 
 	
 	Then, the point candidates are tracked in subsequent frames by minimizing $E_{pj}$. From the best match, the depth value is initialized. 
 	
-	When old points are marginalized, candidate points are activated in a way that points in the active map are as evenly distribuited 
+	When old points are marginalized, candidate points are activated in a way that points in the active map are as evenly distributed 
 	as possible. This is achieved by always selecting the point, which offers the largest distance to the next active point, after projecting
 	it into the last active keyframe. 
 	
-	Since outlier only consume unnecessary ressources, they are tried to be removed. For example, point for which $E_{pj}$ surpasses a threshold 
+	Since outlier only consume unnecessary resources, they are tried to be removed. For example, point for which $E_{pj}$ surpasses a threshold 
 	are removed permanently. 
 	
 	\end{enumerate}
@@ -328,35 +404,35 @@ and vocabulary used in SLAM
 	\subsection{DSM-SLAM}
 	
 	Direct Sparce Mapping SLAM was released in april 2019 and works similar to DSO slam but claims to be more robust when revisiting 
-	areas. The algorithm can be seperated into a tracking 
+	areas. The algorithm can be separated into a tracking 
 	front-end and an optimization back-end that run on parallel threads. 
 	
 	\subsubsection{Model Overview}
 	
-		DSM uses the same model as DSO. The model is described in section \ref{samemodel}.
+		DSM uses the same model as DSO. The model is described in the previous section.
 	
 	\subsubsection{Front-End}
 	
-	The front-end, however, differs from DSO. While DSO cannot reuse points that have one beein marginalized, DSM suggests a method 
+	The front-end, however, differs from DSO. While DSO cannot reuse points that have once being marginalized, DSM suggests a method 
 	to activate and inactivate keyframes and points to its needs. 
 	
 	\begin{enumerate}
-	\item{keyframe and mappoint selection}
+	\item{Keyframe and map point selection}
 	
-	When selecting keyframes and mappoints, two criteria play a role: the temporal and covisibility criteria. 
+	When selecting keyframes and map points, two criteria play a role: the temporal and covisibility criteria. 
 	The temporal parts regards $N_t$ keyframes as recent sliding window approach, just like DSO. With similar 
-	critirias for keyframe selection as DSO, whenever a new keyframe is inserted, anotherone is removed (from the temporal part).
+	critirias for keyframe selection as DSO, whenever a new keyframe is inserted, another one is removed (from the temporal part).
 
-	In order to regard reobserved points, DSM also considers $N_c$ covisibil keyframes to fill the latest keyframe $I_0$ with map points, favouring 
-	map points in depleted areas. This is achived by the following steps: 
+	In order to regard re-observed points, DSM also considers $N_c$ covisibil keyframes to fill the latest keyframe $I_0$ with map points, favoring 
+	map points in depleted areas. This is achieved by the following steps: 
 	
 	\begin{enumerate}
 	\item{Identify depleted areas}
 	
-	All map points from the temporal part are mapped into the latest keyframe. For every pixel, the eucleadian distance to the closest map point 
-	is computed. Obvously, large distances suggest depleted areas.
+	All map points from the temporal part are mapped into the latest keyframe. For every pixel, the euclidean distance to the closest map point 
+	is computed. Obviously, large distances suggest depleted areas.
 	
-	\item{covisibil Keyframe Selection}
+	\item{Covisibil keyframe selection}
 	
 	Select the keyframe within the old keyframes with the most map points in the above selected depleted area. Map points, where the viewing angle 
 	lies too far from the latest keyframe are removed from the local map. 
@@ -372,19 +448,19 @@ and vocabulary used in SLAM
 	
 	\end{enumerate}
 	
-	The entire keyframe and mappoint selection is displayd in figure \ref{fig:dsm_fig}. In this case, $N_t$ is equal to four and $N_c$ is equal to three.
+	The entire keyframe and map point selection is displayed in figure \ref{fig:dsm_fig}. In this case, $N_t$ is equal to four and $N_c$ is equal to three.
 	
-	\fig{img/dsmKeyframes.png}{Keyframe and Point Selection of DSM. Source: \cite{dsm}}{fig:dsm_fig}{0.7}
+	\fig{img/dsmKeyframes.png}{Keyframe and Point Selection of DSM. Source: \cite{dsm}}{fig:dsm_fig}{0.8}
 	
-	\item{Frame Tracking, New Keyframe desicion, New Map Point Tracking}
+	\item{Frame Tracking, New Keyframe decision, New Map Point Tracking}
 	
-	Frame Tracking, New Keyframe desicion and New Map Point Tracking work similar to DSO slam. The main idea is always to manipulate the local map 
+	Frame Tracking, New Keyframe decision and New Map Point Tracking work similar to DSO slam. The main idea is always to manipulate the local map 
 	by minimizing the photometric error displayed in equation \ref{eq:test}. 
 
 	However, unlike DSO SLAM, in each frame, the local map 
 	consisting of the $N_t + N_c$ keyframes (referenced from the latest keyframe) and contained map points is projected into the frame. 
 	Obviously, this also brings the difference compared to DSO slam, that keyframes and map points are not permanently culled from the 
-	map, and may be reactivated once the keyframe appears in the covisibilty graph. Also, the management of outliers is similar to DSO-SLAM, 
+	map, and may be reactivated once the keyframe appears in the covisibility graph. Also, the management of outliers is similar to DSO-SLAM, 
 	Trying to remove outliers as early as possible, in order to save computational resources. 
 	\end{enumerate}
  
