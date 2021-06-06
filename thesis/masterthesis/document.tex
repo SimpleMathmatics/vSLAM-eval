@@ -1,10 +1,14 @@
 \newcommand{\argmin}{\mathop{\mathrm{arg\,min}}}
+\newcommand{\argmax}{\mathop{\mathrm{arg\,max}}}
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
 % This thesis template is based on the report class of
 % latex. Yout do not need to change this.
 \documentclass[12pt, a4paper]{report}
 \usepackage{amsmath}
 \usepackage{subfig}
+\usepackage{algpseudocode}
+\usepackage[]{algorithm2e}
+\usepackage{hyperref}
 % This includes all variables that are used in this work
 % Use this document to specify your name, your reviewers
 % and other values that you would like to maintain
@@ -80,15 +84,18 @@
     % necessary
     \include{chapters/intro}
     \include{chapters/methods}
+	\include{chapters/eval}
     \include{chapters/results}
     \include{chapters/disc}
-
-    \bibliographystyle{abbrv}
+	\include{chapters/rec}
+	\include{chapters/sum}
+	
 
     % This places the bibliography. You can add more
     % bibliographic items it the bibliography.bib file. 
     % We suggest using a reference manager (e.g., Jabref)
     % to maintain this file
+	\bibliographystyle{abbrv}
     \bibliography{bibliography}
 
     \newpage

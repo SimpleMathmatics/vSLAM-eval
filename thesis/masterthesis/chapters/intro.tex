@@ -1,6 +1,73 @@
 \chapter{Introduction}
 
+Multiple applications exist for the autonomous exploration and mapping tasks with drones,
+ such as search and rescue-, inspection- and surveillance operations \cite{usecases}. 
+ 
+ The autonomous exploration task can be divided into three subproblems: localization, mapping, and path planning \cite{accurat}. 
+ All three tasks should be performed simultaniously within an environment, which the drone has no information on a priori. 
+ 
+ The localization task contains the estimation of the position of the drone within this environment and the mapping task refers to 
+ the incremental creation of a 3-demensional map. Multiple methods exist, that combine these two tasks in a so-called 
+ simultaneous localization and mapping (SLAM) algorithm. The development of these SLAM algorithms is one of the most researched topics 
+in the field of robotics \cite{slamintro}.
+
+\begin{quote}
+SLAM is used for many applications including mobile robotics, self-driving cars, unmanned
+aerial vehicles, or autonomous underwater vehicles \cite{quote1}.
+\end{quote}
+
+ When combining a SLAM algorithm with a path planning algorithm, an autonomous exploration 
+system is created. The autonomous exploration using SLAM and a path planning algorithm is sometimes also referred to as active SLAM \cite{inproceedings}. 
+This active SLAM process is displayed in figure \ref{fig:autsys}. Details on how such a system can be initiated and terminated, can be found in section 
+\ref{rosframe}.
+ 
+ \fig{img/aut_system.png}{Automated exploration system, based on a SLAM algorithm and a path planning algorithm. }{fig:autsys}{0.9}
+ 
+This work targets to answer two distinct research questions. 
+ 
+ \begin{enumerate}
+ \item{What is the most suitable open-source monocular visual SLAM algorithm for an exploration task?}
+ 
+ 
+  This paper is limited to evaluate monocular visual SLAM (vSLAM) algorithms, meaning that the algorithm is only working
+ with a single RGB (red, green, blue) camera as sensor. Therefore, since nowadays RGB cameras are either a standard on drones or can easily be upgraded,
+ these drones are very affordable, making it highly available for a larger user group. 
+ 
+ 
+ Thus, for this first part of this work, three open-source monocular visual SLAM algorithms are evaluated. 
+  DSO (Direct Sparse Odometry) SLAM, DSM (Direct Sparce Mapping) SLAM and ORB (Oriented FAST and Rotated BRIEF)
+ SLAM were investigated regarding the predefined criteria of the accuracy of the resulting trajectory estimation, the point cloud accuracy and computational speed. 
+ 
+ This was done by using the publicly available benchmark EuRoC dataset \cite{euroc}, containing video sequences filmed by a drone, the 
+ ground truth of the position of the drone and the point cloud of the environment. Thus, the three SLAM algorithms are applied on the 
+ video sequences, the resulting trajectories and map points are compared to the ground truth regarding the above-mentioned criteria.
+
+ \item{How can a framework be set up, where fully automated exploration systems can be tested and developed within a simulated environment?}
+ 
+ 
+ In the second part of this work, a Roboter Operating System (ROS) framework, that enables users to develop a fully automated exploration system within 
+ a virtual environment is suggested. This framework includes a process, that provides a simulated Gazebo environment, making it possible to navigate 
+ a virtual drone within a simulated environment. The sensors and behavior of the drone are modeled realistically. Most importantly, the drone is equipped with a RGB 
+ camera, making it possible to directly apply a vSLAM algorithm on the output. 
+ Furthermore, the most suitable algorithm, evaluated in the first part of the work is implemented in a subprocess of this framework. 
+ 
+ While the functionality and current state of the art of methods tackling the path planning task of the automated system are described and a suggestion on how it could 
+ be implemented into the framework are given in section \ref{path}, this work doesn't include an actual implementation of such an algorithm. 
+ Such implementations are left for further research. 
+ 
+ The suggest framework should rather function as an option for users to implement and test out new path planning algorithm, providing optimal 
+ prerequisites to do so. 
+ 
+ For example, the subprocess of the framework, in which the path planning algorithm should be running can be provided with all necessary data, 
+ such as sensor data of the drone and the estimated orientation, position and point cloud by the vSLAM algorithm. This stream data is preprocessed 
+ and standardized 
+ in real time, enabling users to directly use it for their purposes. 
+ 
+ 
+\end{enumerate} 
+ 
+ 
 
 
-\section{Related Work}
+
 
