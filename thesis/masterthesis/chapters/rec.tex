@@ -158,7 +158,7 @@ in Indoor Environments using Learning-Based Techniques by Sampedro c. at al \cit
 	topics of the drone are then limited to the drone sensors, as displayed in figure \ref{fig:autrosreal}
 	
 	
-	\subsection{ORB-SLAM Node}
+	\subsection{ORB-SLAM Node}\label{orbnode}
 	
 	The ORB-SLAM algorithm runs in a separate node. For the vocabulary file, needed for the bag of words approach, explained in section \ref{bagofword}, the 
 	standard vocabulary file provided by the authors are considered. For the virtual environment, it might be useful to provide a vocabulary file 
@@ -334,22 +334,26 @@ def update_trans_variables(self):
 			self.trans_publisher.publish(t)
 \end{lstlisting}
 	
-
 	
 	\subsection{Position Estimation Node}
 	
-	The position estimation node appriximates the position of the drone based on the valocity on the drone and the latest position. ORB-SLAM, used 
+	This node is only relevant for the real life framework. there, since no groud truth is available for the position of the drone, 
+	the position estimation node approximates the position of the drone based on the velocity on the drone and the latest position. ORB-SLAM, used 
 	in the visual monocular mode is as mentioned not able to extract the true scale of the environment. Estimating the true position enables us 
-	to also scale the computed point cloud by the ORB SLAM node to its true scale. This method should be done in the initialization process, by 
+	to also scale the computed point cloud by the ORB SLAM node to its true scale. 
+	
+	This method should be done in the initialization process, by 
 	only doing translational movements with the drone, such as a takeoff and a short foreward movement. No rotations should be performed with the drone 
-	since the drones navigation data, such as the veloxity, uses the bodyframe as reference frame. Thus doing rotations would result in an incorrect 
+	since the drones navigation data, such as the velocity, uses the body-frame as reference frame. Thus doing rotations would result in an incorrect 
 	estimation of the position. 
 	
 	While relying on the information about the 
-	velocity of the drone, the drone needs to have inertial sensors attached. Having these IMU sensors, as the ardrone in the simulation does, also ORB SLAM would benifit from 
-	accuracy, since it the integration in the algorithm is implemented. However, if drone does not have these sensors attached, 
-	this node can still be of benefit, since it is possible to manually publish messanges to the topic. The initialization process could then be applied 
-	by manually flying the drone one meter up, and one meter foreward and logging these points to the system. Then the automazation process could be started.
+	velocity of the drone, the drone needs to have inertial sensors attached. Having these IMU sensors, as the ARdrone 2.0 in the simulation does,
+	also ORB SLAM would benefit from 
+	accuracy, since an integration in the algorithm is implemented. However, if drone does not have these sensors attached, 
+	this node can still be beneficial, since it is possible to manually publish messages to the /drone\_position\_init topic. 
+	The initialization process could then be applied 
+	by manually flying the drone one meter up, and one meter foreward and logging these points to the system. Then the automation process could be started.
 	
 	
 	Folling an overview over the input, output and computational functionality of the node. 
@@ -361,13 +365,13 @@ def update_trans_variables(self):
 	\begin{enumerate}
 	\item{/ardrone/navdata}
 	
-	This topic is beeing published with the tum simulation node described in item \ref{asdfasdf}.
+	This topic is beeing published with the tum simulation node described in section \ref{tumsec}.
 	This node only uses the velocity vectors
-	$v_x \in \mathbb{R}, v_y \in \mathbb{R}, v_z \in \mathbb{R}$ given in the unit $mms^{-1}$ included in the published navdata messenges. 
+	$v_x \in \mathbb{R}, v_y \in \mathbb{R}, v_z \in \mathbb{R}$ given in the unit $mms^{-1}$ included in the published navdata messages. 
 	
 	\item{/drone\_position\_init}
 	
-	The drone also subscribes to the /drone\_position\_init topic, published by itself. This topic includes messenges of the class PointStamped. 
+	The drone also subscribes to the /drone\_position\_init topic, published by itself. This topic includes messages of the class PointStamped. 
 	This class includes the x, y and z coordinate of the point itself, and a timestamp.  
 	The node also needs the information from this topic, 
 	to read in the last position and update it based on the velocity, by doing the computations explained in the following section. The x y and z 
@@ -381,22 +385,22 @@ def update_trans_variables(self):
 	\begin{enumerate}
 	\item{/drone\_position\_init}
 	
-	This topic is explained in the upper section. The updated points are published in this topic
+	This topic is explained in the upper section. The updated points are published in this topic.
 	
 	\end{enumerate}
 	
 	\subsubsection{computation}
 	
 	As mentioned, the computation is made based on the current velocity $$v_i = \begin{pmatrix} v_{i,x} \\ v_{i,y} \\ v_{i,z} \end{pmatrix} \in \mathbb{R}^3$$ and the 
-	latest position point $$x_{i-1} = \begin{pmatrix} x_{i-1,x} \\ x_{i-1,y} \\ x_{i-1, z} \end{pmatrix} \in \mathbb{R}^3$$. Also, the timedifference 
-	in seconds to the last point is extracted, which is easy, since all onject from the class PointStamped can be timestamped. The difference is given by 
+	latest position point $$x_{i-1} = \begin{pmatrix} x_{i-1,x} \\ x_{i-1,y} \\ x_{i-1, z} \end{pmatrix} \in \mathbb{R}^3$$. Also, the time difference 
+	in seconds to the last point is extracted, which is easy, since all objects from the class PointStamped can be timestamped. The difference is given by 
 	$\Delta t_i =  t_i - t_{i-1}$. The updated position is the yielded by
 	
 	$$x_{i} = x_{i-1} + \frac{\Delta t_i * v_i}{1000} $$. 
 	
 	Dividing by 1000 yields the unit meter. 
 	
-	This recursive methodoly is shown in figure \ref{fig:positionfinding}
+	This recursive methodology is shown in figure \ref{fig:positionfinding}
 	
 	\fig{img/pos_estimation.png}{Calculation method for estimation the position in the initialization process in order to find the 
 	true scale.}{fig:positionfinding}{0.8}
@@ -431,31 +435,31 @@ if x_vel is not None and y_vel is not None and z_vel is not None:
 	\end{lstlisting}
 	
 	
-	\subsection{Transformation and Constrain Node}
+	\subsection{Transformation and Restriction Node}
 	
-	This node processes the scale, rotation matrix and translation vector computed in the alignment node and transformes the orb pose and the pointcloud computed 
-	by orb slam into the reference frame of the gazebo world. In addition, constrains are added to the searching space of the path finding algorithm by adding 
+	This node processes the scale, rotation matrix and translation vector computed in the alignment node and transforms the ORB pose and the point cloud computed 
+	by ORB SLAM into the reference frame of the gazebo world. In addition, constrains are added to the searching space of the path finding algorithm by adding 
 	walls of points in the resulting point cloud of ORB. 
 	
 	These processes make sense for many reasons. On the one hand transforming the ORB\_SLAM output in the gazebo world creates the possibility to compare the 
-	estimated position of the ORB-SLAM-Algorithm to the groundtruth position as it also has been done in the evaluation of the vSLAM algorithms. While it is 
-	was not yet managed to extract the groundtruth pointcloud of the gazebo world, as described in issue \ref{asdfadsf}, it is technically possible, to also 
-	compare the groundtruth pointcloud to the generated one. On the other hand, it also enables users to track the path planned by the path planning algorithm relative
+	estimated position of the ORB-SLAM-Algorithm to the ground truth position as it also has been done in the evaluation of the vSLAM algorithms. While it is 
+	was not yet managed to extract the ground truth point cloud of the gazebo world, as described in section \ref{frameissues}, it is technically possible, to also 
+	compare the ground truth point cloud to the generated one. On the other hand, it also enables users to track the path planned by the path planning algorithm relative
 	to its surrounding in the future. 
 	
-	The restriction of the searching space is useful, because the aim the path planning algorithm is to explore unseen areas in in the searching space. Obviosly, 
-	since the path planning algorithm relys exclusivly on the pointcloud, unseen areas are then defined as areas, where no points are available. The gazebo world, 
+	The restriction of the searching space is useful, because the aim the path planning algorithm is to explore unseen areas in in the searching space. Obviously, 
+	since the path planning algorithm relies exclusively on the point cloud, unseen areas are then defined as areas, where no points are available. The gazebo world, 
 	displayed in figure \ref{fig:simfigs}, exceeds in unlimited space and therefore will cause the path finding algorithm to navigate in infinite space. Also the ground, sides and 
 	sky of the world have no texture, and will make it impossible to find features and therefore generate points for the ORB-SLAM-Algorithm. Unfortunately, 
-	as described in issue \ref{dsf}, no other world is yet available. Thus, adding points to 
-	limit the searching space is crucial. This is the reason why most navigation algorithm are constructed for indoor navigation \ref{cite:asdf}. 
+	as described in the issue section \ref{frameissues}, no other world is yet available. Thus, adding points to 
+	limit the searching space is crucial. This is the reason why most navigation algorithm are constructed for indoor navigation.
 	
 	\subsubsection{Input}
 	
 	\begin{enumerate}
 	\item{/orb/map\_points}
 	
-	The ORB point cloud topic, described in section \ref{adsfadsf} subscribed to by the node. 
+	The ORB point cloud topic, described in section \ref{orbnode} is subscribed to by the node. 
 	
 	\item{/orb/pose}
 	
@@ -468,8 +472,8 @@ if x_vel is not None and y_vel is not None and z_vel is not None:
 	\begin{enumerate}
 	\item{/pointcloud\_transformed}
 	
-	The node publishes data to the topic /pointcloud\_transformed with messenges of the class PointCloud. Therefore, the pointcloud contains the transformed 
-	pointcloud of ORB SLAM and the points, that are inserted to limit the searching space of the flight path finding algorithm. 
+	The node publishes data to the topic /pointcloud\_transformed with messenges of the class PointCloud. Therefore, the point cloud contains the transformed 
+	point cloud of ORB SLAM and the points, that are inserted to limit the searching space of the flight path finding algorithm. 
 	The exact computations are shown 
 	in section below. 
 	
@@ -482,14 +486,14 @@ if x_vel is not None and y_vel is not None and z_vel is not None:
 	
 	\subsubsection{computation}
 	
-	First, all points $p_i$ in the point cloud and the estimated positions are transformed with the rotation matrix $R$, scale $s$ and transformation vector $t$ recieved 
+	First, all points $p_i$ in the point cloud and the estimated positions are transformed with the rotation matrix $R$, scale $s$ and transformation vector $t$ received 
 	from the above described topics. The resulting points are therefore computed by: 
 	
 	$$p'_i = sRp_i + t$$.
 	
-	Then, the restriction points are added to the pointcloud.
+	Then, the restriction points are added to the point cloud.
 	The ground plane of the gazebo world has a size of 100x100, but only the center is filled with objects (models). The middle of the plane 
-	lies in the axact origin of the gazebo world. The goal is to restrict the search space of the path planning algorithm to the hull of a cuboid with 15m
+	lies in the exact origin of the gazebo world. The goal is to restrict the search space of the path planning algorithm to the hull of a cuboid with 15m
 	height, 60m length and width. The cuboid is therefore given by: 
 	
 	$$\Omega = \left\{(x, y, z) \in \mathbb{R} : x \in \left[-30, 30\right] \land y \in \left[-30, 30\right] \land z \in \left[-30, 30\right] \right\}$$.
@@ -511,30 +515,37 @@ for x_oi in np.linspace(-30, 30, 100):
 
 	\end{lstlisting}
 
-	Note that for the point cloud the coordinates are only stored in 32 bit to save resouces, since the pointclouds can contain ten thousands of datapoints. In order not 
+	Note that for the point cloud the coordinates are only stored in 32 bit to save resources, since the point cloud can contain ten thousands of data-points. In order not 
 	to overload the system, the transformation node runs on a frequency of only 5Hz, which results in smooth computation. 
 	
 	\subsection{Flight Path Planning Node} \label{path}
 	
-	The fight path planning node is in charge of autonomously navigating the drone. This should be done without colliding with any obsticals. 
+	The fight path planning node is in charge of autonomously navigating the drone. This should be done without colliding with any obstacles. 
 	On the other hand, since the goal is to explore the environment, the algorithm should always thrive to visit new areas in order to generate 
 	new map points. 
 	
 	While the computation of this node is not yet implemented and is not part of this work, the desired input and output can be cleanly defined. 
-	Also, three algorithms, currently used in for path planning approaches in active SLAM-application are described in the computation section. 
+	Also approaches currently used in for path planning approaches in active SLAM-application are described in the computation section. 
 	
 	\subsubsection{Input}
 	
 	\begin{enumerate}
-	\item{/global\_map\_points}
+	\item{/pointcloud\_transformed}
 	
-	This topic is explained in the upper section \ref{adafsf}. 
+	This topic is explained in the upper section. 
 	
-	\item{/global\_map\_points}
+	\item{/pose\_transformed}
 	
-	This topic is explained in the upper section \ref{adafsf}.
+	This topic is explained in the upper section.
 	
-	\item{/colliding}
+	\item{/pose\_transformed}
+	
+	This topic is explained in the upper section.
+	
+	\item{/gazebo/collision}
+	
+	For the simulated framework, the node also may subscribe to the /gazebo/collision topic. This enables users to penalize the algorithm in the training 
+	process, in case the obstacle avoidance did not succeed.
 	
 	
 	\end{enumerate}
@@ -543,14 +554,29 @@ for x_oi in np.linspace(-30, 30, 100):
 	
 	\begin{enumerate}
 	\item{/cmd\_vel}
-	This topic is explained in the upper section \ref{adafsf}.
+	
+	The node should publish navigation commands to /cmd\_vel, as shown in example \ref{lst:drone_cmd}.
+	
 	\end{enumerate}
 	
 	\subsubsection{Computation approaches}
 	
-	While the research in the field of automated exploration algorithms is still in its early ears \cite{early} and will probaply be mainly performed 
-	in simulated environment in the near future \cite{deep}, some frameworks on tackeling the 
+	The path planning task for autonomous exploration is also related to visual servoing, which is a technique to control a robot, by 
+	directly feeding it visual information. However, for most of these thechniques, the observation target has to be predefined and is also assumed 
+	to always be in the field of view. 
+	
+	\begin{quote}
+	
+	In most visual servoing methods, feedback signals for the servoing
+	controller are estimated by means of multiple-view geometry assuming 
+	the target scene being always within the camera field of view (FOV) \cite{servo}.
+	
+	\end{quote}
+	
+	While the research in the field of automated exploration algorithms is still in its early years \cite{early} and will probably be mainly performed 
+	in simulated environment in the near future \cite{deep}, some frameworks on tackling the 
 	task already exist \cite{early}, \cite{deep} \cite{accurat} \cite{lopez}. 
+	
 	In this section, approaches, that the path flying node could be based on are explained. 
 	
 	\begin{quote}
@@ -561,7 +587,7 @@ execution of the optimal action \cite{deep}.
 \end{quote}
 
 A general framework for decision making processes within a certain environment was introduced with the Partially Observable Markov Decision Processes (POMDP) framework. 
-	The active SLAM problem can be formally defined with this framework. 
+	The active SLAM problem can be formally defined within this framework. 
 	The POMDP framework relies on seven components \cite{thesisvandenhof}, listed below. 
 	
 	\begin{itemize}
@@ -589,9 +615,9 @@ A general framework for decision making processes within a certain environment w
 	
 	$$R(a,s) = \left\{
 \begin{array}{ll}
-n & \textrm{for } n \textrm{ newly explored points by the ORB-SLAM-Algorithm, after action a was taken in state s} \\
--15 & \, \textrm{if tracking is lost, after action a was taken in state s}  \\
--30 & \, \textrm{if the drone collided, after action a was taken in state s}  \\
+n & \textrm{for } n \textrm{ newly explored points by ORB-SLAM,\ after action a in state s} \\
+-15 & \, \textrm{if tracking is lost, after action a in state s}  \\
+-30 & \, \textrm{if the drone collided, after action a in state s}  \\
 \end{array}
 \right. $$
 	
@@ -605,11 +631,6 @@ n & \textrm{for } n \textrm{ newly explored points by the ORB-SLAM-Algorithm, af
 	
 
 	\begin{enumerate}
-	
-	\item{Monte Carlo}
-	
-	% image based servoing
-	% computation time studie...vermutlich nicht annähernd real time...omega reduzieren
 	
 	\item{Reinforcement learning}
 	
@@ -625,14 +646,30 @@ n & \textrm{for } n \textrm{ newly explored points by the ORB-SLAM-Algorithm, af
 	
 	At each iteration, the value of $Q(s,a)$ is updated with the following term: 
 	
-	$$ \Delta Q(s,a) = \alpha(R(a,s) + 	\gamma \argmax_{a'}Q(s', a') - Q(s, a))$$.
+	\begin{equation}\label{update}
+    \Delta Q(s,a) = \alpha(R(a,s) + 	\gamma \argmax_{a'}Q(s', a') - Q(s, a)).
+	\end{equation}
 	
 	$\gamma$ is called the discount factor and is a value between 0 and 1 and defines, how much weight is given to the reward for steps that are further away from the current one. 
-	For example, if $\gamma = 0.8$, the third term of the cummulated sum is only weihted with ${0.8}^3 = 0.512$. Thus, the more relyable the algorithm 
+	For example, if $\gamma = 0.8$, the third term of the cummulated sum is only weihted with ${0.8}^3 = 0.512$. Thus, the more reliable the algorithm 
 	and the chosen reward funktion is, the higher $\gamma$ can be chosen, and therefore the better the algorithm plans the navigation into the future. 
 	
 	The exact computational steps are shown in algorithm \ref{qlearn}. 
-	The algorithm 
+	First, the learning rate $\alpha$, and the discount function $\gamma$ have to be predefined. One possibility to find the optimal values for $\alpha$ and 
+    $\gamma$ is to perform a grid search. For the grid search and for the Q-learning algorithm also an mapping function has to designed, that maps 
+	the point cloud to a value that determines, how far the target exploration process has proceeded. This function could for example be examining the point clouds 
+	distribution within the searching space. 
+	
+	Also, a number of episodes to train the models has to be defined. This is equal to the number of runs that are 
+    performed until the agent, in our case the drone, gets to a terminal state. A terminal state is a state, where the agent is finished. In our case, that would 
+	be equal to the state, where the drone collided, or a termination constrain has been hit when the exploration task has been successfully finished.
+	This termination constrain could for example be a reached 
+	threshold of the previous defined mapping function. 
+	
+	Then in the algorithms while loop, in each episode, the algorithm iterates, by updating the Q-table, until 
+	a terminal state is reached. 
+	The Q-table is a matrix, that consists of all possible actions as columns and all possible states as rows. The Q-table is updated after every action by 
+	using the update rule stated in equation \ref{update}. 
 	
 	
 	\begin{algorithm}[H]
@@ -650,8 +687,6 @@ n & \textrm{for } n \textrm{ newly explored points by the ORB-SLAM-Algorithm, af
 	\caption{Q-learning algorithm. Source: \cite{deep}}\label{qlearn}
 	\end{algorithm}
 	
-	
-
 	
 	In the recent years, successes were made in the applyance of deep reinforcement learning algorithms for robotic navigation and exploration \cite{deep} \cite{accurat}. 
 	These approaches don't analytically compute the output of $Q$ but rather a Deep Neural Network is created in order to predict the output. 
@@ -671,6 +706,14 @@ optimal trajectories: smoother movements and less spins. \cite{deep}
 	\end{quote}
 	D3QN is also a path planning algorithm based on deep reinforcement learning proposed by Wen et al in 2020 in their work Path planning for 
 	active SLAM based on deep reinforcement learning under unknown environments \cite{accurat}.
+	
+	\item{Other approaches}
+	
+	Aside from the above-discussed reinforement learning methods, other approaches to tackle the path planning task exist. 
+	
+	Back in 2006, Leung et al published their work Active SLAM using Model Predictive Control and Attractor based Exploration \cite{ppap2}.
+
+	In their work Active SLAM and Exploration with Particle Filters Using Kullback-Leibler Divergence \cite{ppap1}, Carlone et al suggested....
 	
 	\end{enumerate}
 	
@@ -719,6 +762,9 @@ rosrun auto_explorer scale_updater.py
 
 # start the position estimation node
 rosrun auto_explorer position_updater.py
+
+# asdfasdf
+# asdfasdf
 	
 # takeoff with drone 
 rostopic pub -1 /ardrone/takeoff std_msgs/Empty
@@ -747,7 +793,7 @@ rostopic pub -1 /ardrone/takeoff std_msgs/Empty
 	
 	So far, no solution has been detected, but one possible workaround would either to build another world from scratch. Another possible solution would be to add flying 
 	constrains to the path planning algorithms, that limits the environments on a predefined volume. This solution is implemented by the bla bla node, described in section 
-	\ref{dsfadf}, which restriction points to the pointcloud. 
+	\ref{dsfadf}, which restriction points to the point cloud. 
 	
 	
 \begin{lstlisting}[language=bash, caption= Launching different world, label=lst:worldchange]
@@ -757,16 +803,18 @@ roslaunch cvg_sim_gazebo land_station1.launch
 
 \end{lstlisting}
 
-	\item{No ground truth pointcloud}
+	\item{No ground truth point cloud}
 	
 	While the pose and position of the models in the gazebo world, such as the drone itself, the houses and other objects, are known, it was not yet possible 
 	to convert these objects into pointclouds. 
 	
-	% problembeschreibung hier noch. 
-	
 	This refuses the possibilty to compare the evaluated points by the ORB algorithm in the ROS setup, to their true position. Users of the setup now have to solely
 	rely on the results of evaluation described in section \ref{asdfasdf}.
 	
-	\item{No bumper}
+	\item{Collision sensor not working}
+
+	Gazebo provides the possibility to attach collision sensors to models existing in the world. These sensors can simply be defined in the respective 
+	.XML file of the model. However, even after the implementation and no error message, the respective topic, where the data should be published, 
+	does not appear when calling the rostopic list cammand. So far, no solution could be found. 
 
 	\end{enumerate}

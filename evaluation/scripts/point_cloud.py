@@ -156,7 +156,7 @@ if __name__ == "__main__":
         dists = pq_eval.compare_to_gt(pq_gt)
         np.save("../results/V101/ORB/data/distances_pointcloud.npy", dists)
 
-    if True:
+    if False:
         import os
         filenames = pd.read_csv("../config/data_meta.csv", sep=";").filename.tolist()
 
