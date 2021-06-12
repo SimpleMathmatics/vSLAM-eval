@@ -1,9 +1,8 @@
-import pptk
+# import pptk
 import pandas as pd
 from plyfile import PlyData
-import numpy as np
 from scipy.spatial.distance import cdist
-import plotly.graph_objects as go
+import numpy as np
 
 class PointCloud:
     def __init__(self):
@@ -80,8 +79,8 @@ class PointCloud:
             v.set(point_size=point_size)
 
     def compare_to_gt(self, gt_point_cloud):
-        # get 1000 random points from point cloud
-        random_indices = np.random.choice(self.n, size=500, replace=True)
+        # get 150 random points from point cloud
+        random_indices = np.random.choice(self.n, size=150, replace=True)
         eval_points = self.point_mat[random_indices, :]
         gt_points = gt_point_cloud.point_mat
         dists = []

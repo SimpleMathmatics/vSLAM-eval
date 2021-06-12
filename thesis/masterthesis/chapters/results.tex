@@ -1,18 +1,43 @@
 \section{Results}
 
-The three SLAM algorithms were evaluated regarding the computed trajectories, the resulting pointclouds and
-the computational complexity. 
+The three SLAM algorithms were evaluated regarding the computed trajectories, the resulting point clouds and
+the computational cost. 
+
+
+\fig{img/perc_seq.png}{Boxplot of the percentages of the sequence, that were tracked by the algorithm for each run.}{fig:percseq}{1}
+
+Each algorithm needs a certain time to start the tracking. For example, when the drone rests at the first ten seconds of the sequence, the SLAM 
+algorithm won't be able to initialize, since it needs a transformation to recognize the position of a point or feature in space. How much transformation 
+is needed is algorithm-specific. Also, as discussed in section \ref{complement}, ORB-SLAM3 provides the possibility to create a new local map, once the tracking
+was lost and merge the new map with the old one, once the places from the old map are revisited within the new map. However, if the tracking is lost and hence 
+a new map is created, but no places from the old map are revisited, these maps can not be merged. Therefore it is possible to yield multiple maps for 
+a single sequence. In case this happens, only the map with the largest amount of keyframes is considered, and the resulting trajectory and point cloud is derived
+from this respective map only. In figure \ref{fig:percseq} the percentages of the sequence where the tracking was successful are displayed. For most sequences, 
+the percentage is similar between the algorithms and the runs. Small differences underlie the differences of the end time-point of the initialization process. However, 
+for sequences V103 and V203, ORB-SLAM created a second map, that could not be merged with the old one. Hence, for one run in sequence V103 and for all runs in 
+sequence V203, a part of the tracking is missing. This needs to be taken into consideration when analyzing the results. 
+
+The fact, that in one run the tracking can be lost, while within the same algorithm and sequence the tracking isn't lost in another run, suggests the 
+assumtion that runs within the same algorithm and same sequence can yield different results. The confirmation of the assumption is displayed in figures 
+\ref{fig:comp2} and \ref{fig:comp1}. 
+
+\fig{img/comp_runs2.png}{Distances to the ground truth position for the trajectory of all runs within an algorithm for sequence MH01}{fig:comp2}{1}
+
+The first figure shows the results of all runs for the sequence MH01, which is an easy sequence to track, since the the velocity of the drone and the 
+angular velocity is low, while the sequence provides a bright scene and good texture. Difference between the runs for the sequence are not large, but they exist. 
+For example the first run of ORB needs more time to initialize the tracking, which causes the tracking to start later and end earlier. These differences between runs
+may result from the fact, that the algorithms run in different threads, that perform simultaneously. This doesn't guarantee that the computations always occur in the same succession. 
+Differences seem to be lower for DSO SLAM. This may be because DSO SLAM has no thread performing global optimization simultaneously. 
+
+\fig{img/comp_runs_V203.png}{Distances to the ground truth position for the trajectory of all runs within an algorithm for sequence V203}{fig:comp1}{1}
+
+For more difficult sequences, that might even cause some runs to loose tracking while others don't, as it can be seen in figure \ref{fig:comp1}
 
 \subsection{Trajectory Evaluation}
 
-	In order to evaluate the quality of the trajectory computed by the algorithms, the trajectory firstly had to be 
-	transformed into the world reference of the ground truth data. This is because the algorithms usually initialize
-	the origin with the first (key)frame and the groundtruth data doesn't. Furthermore, monocular visual slam algorithms 
-	are generally not capable to extract the true scale. The alignment was performed using the method of Umeyama, described
-	in the \ref{comp} section. 
 	After alignment, as a first indicator for the accuracy of the computed trajectories, the trajectories were visually observed by 
-	plotting the true position and the evaluated position into a coordiante system. The x, y and z axis were observed seperatly. This method 
-    for comparing the trajectories is described in detail in section \ref{detail}. Obviously, trajectories, that align perfectly with the groundtruth
+	plotting the true position and the evaluated position into a coordiante system. This method 
+    for comparing the trajectories is described in detail in section \ref{poseval}. Obviously, trajectories, that align perfectly with the ground truth
 	suggest that the position was correctly evaluated by the algorithm. 
 	
 	% and here 
@@ -25,73 +50,67 @@ the computational complexity.
 	\qquad
     \subfloat[\centering V203]{{\includegraphics[width=9cm]{img/traj_last.png} }}%
     \caption{
-	Ground truth flight path and evaluated flight path of each algorithm after alignment with the method of Umeyama in the x and y axis in meters. 
-	Left the sequence MH01, middle the sequence V102 and right the sequence V203 is displayed.
+	Ground truth flight path and evaluated flight path of each algorithm after alignment with the method of Umeyama in all axes in meters. 
+	Top the sequence MH01, middle the sequence V102 and bottum the sequence V203 are displayed.
 	}%
     \label{fig:flight_path}%
 	\end{figure}
 	
-	In figure \ref{fig:flight_path} the computed trajectories are plotted against the groundtruth for sequences MH01, V102 and V203 considering only the 
-	x and y coordinate. These sequences 
-	were selected, because they represent the results of the visual analalysis well. In the first sequence, MH01, all algorithms showed excellent results. 
-	One reason for this could be, that in the first sequence, the camera only does very gentel movements, moving at an average speed of $0.41 ms^{-1}$. 
+	In figure \ref{fig:flight_path} the computed trajectories are plotted against the ground truth for sequences MH01, V102 and V203 by inserting the 
+	trajectories into a 3D coordinate system. This is displayed for the first run only, in order to keep an overview. These sequences 
+	were selected, because they represent the results of the visual analysis well. In the first sequence, MH01, all algorithms showed excellent results. 
+	One reason for this could be, that in the first sequence, the camera only does very gentle movements, moving at an average speed of $0.41 ms^{-1}$. 
 	
-	The second image shows the sequence V102. Here, ORB and DSM show good results, since in most parts, the trajoctories are aligned perfectly. DSO on the 
+	The second image shows the sequence V102. Here, ORB and DSM show good results, since in most parts, the trajoctories are aligned with the ground truth trajectory.
+	DSO on the 
 	other hand shows a significant difference in the flight path. When observing the trajectory closely, the assumtion is raised, that the algorithm lost tracking 
-	and therefore computed significant wrong postion data. This might have caused the calculated positions in the right of the plot, that have a large distance to 
-	the groundtruth. The rest of the sequence might have been correctly estimated, however since the alignment is done minimzing \ref{sdfasdf}, one significant 
+	and therefore computed significant wrong position data. This might have caused the calculated positions in the left of the plot, that have a large distance to 
+	the ground truth. The rest of the sequence might have been correctly estimated, however since the alignment is done minimizing the term \ref{alignmin}, one significant 
 	mistake in the position estimation, might result in horrific results over the entire sequence after alignment. This is supported by watching the algorithm running
-	and by the fact that in the plot, the trajectory looks very similar to the groundtruth, only with a significantly smaller scale.
+	and by the fact that in the plot, the trajectory looks very similar to the ground truth trajectory.
 	
 	The last plot shows the results of the last sequence. Here, all algorithms had problems estimating a position that comes close to the groundtruth position. ORB
-	SLAM still showed acceptable performance. 
+	SLAM still showed acceptable performance. However, as discussed, ORB only tracks about 83 percent of the whole sequence. 
 	
-	\fig{img/pos_error.png}{The positional error over time in meters. The vertical lines indicate the beginning of a new sequence}{fig:pos_error}{1}
+	\fig{img/dist_error.png}{Boxplot of the mean positional errors of the runs for each sequence and algorithm}{fig:pos_error}{1}
 	
 	Furthermore, the eucleadian distances between position of the keyframe and the true postion of the latter are computed. For a keyframe, 
 	the entry of the groundtruth data with the lowest distance in time to the time the keyframe was inserted is taken as reference point. 
 	This is justifiable, since the true position is sampled at a frequency of over 200 points per second. 
 	
-	Figure \ref{fig:pos_error} shows these distances over time for all sequences and for all algorithms. As suspected, in the first five sequences in the machine 
+	Figure \ref{fig:pos_error} shows the mean distances of all runs for all sequences and for all algorithms. As suspected, in the first five sequences in the machine 
 	hall all algorithm performed good. The availability of more features in the scenery and the slow motions of the camera might explain the yielding of these results. 
-	Also, it can be noticed, that DSO SLAM drifts further apart from the ground truth position with the continuety of the sequence in the sequences MH01, MH03 and V202. 
-	This might be the result of lacking the functionality to close loops and to optimize over the global map, as explained in section \ref{asdfasdf}. 
+	Also, as it can be noticed in figures \ref{fig:comp2} and \ref{fig:comp1}, DSO SLAM drifts further apart from the ground truth position with the continuity
+	of the sequence in the sequences. 
+	This might be the result of lacking the functionality to close loops and to optimize over the global map, as explained in section \ref{dsosecc}. 
 	
-	In figure \ref{fig:boxplot_traj} a boxplot of all computed distances over all sequences is displayed. This plot summarieses the results of the 
-	trajectory analysis. The ORB algorithm, yielding a median positional error of 5.4 cm, performes slightly better than the DSO algorithm. DSO SLAM 
-	shows inconsistent results with a median positional error of more than 10cm and a large amount of errors greater than half a meter. 
+	To summarize, over all runs and sequences, including the sequences, where the tracking was lost, ORB-SLAM had a positional difference to the ground truth 
+	of 11 cm, DSO of 32cm and DSM of 17cm. When excluding sequence V103 and V203, ORB evaluated the position with an average error of 7cm, DSO with 17cm and DSM with 6cm. 
 	
-	\fig{img/boxplot_dist.png}{Boxplot of all euclideans distances between the ground truth position of the keyframe and 
-	the evaluated position after alignment with the method of Umeyama. Outliers greater than 1.5 are not displayed for clarity reasons. 
-	}{fig:boxplot_traj}{1}
-	
-	
-\subsection{Pointcloud Evaluation}
+\subsection{Point cloud Evaluation}
 
-For the evaluation of the computed point clouds, these point clouds were first visually observed, as described in section \ref{sec}. 
-Figure \ref{fig:pointcloud} shows the evaluated point clouds aligned with the ground truth point cloud for sequence V101. This is a sequence, 
-where the tracking of the trajectory was successfull for all three algorithms, thus, the errors of the resulting point clouds can not 
+For the evaluation of the computed point clouds, these point clouds were first visually observed, as described in section \ref{pceval}. 
+Figure \ref{fig:pointcloud} shows the evaluated point clouds aligned with the ground truth point cloud for sequence V101. In this sequence
+ the tracking of the trajectory was successfull for all three algorithms, thus, the errors of the resulting point clouds can not 
 be a result of errors in alignment. 
 
 What becomes clear at first glance is, that as mentioned, ORB generates only few points, since only found keypoints are mapped in feature based methods.
- To give these  points better visibilty, the point size was doubled in the ORB image. DSM and DSO slam generate point clouds with significant higher 
+ To give these  points better visibilty, the point size was doubled in the ORB image. DSM and DSO SLAM generate point clouds with significant higher 
  density, where all structures of the room are clearly visible at first glance. 
  
  However, the advantace of ORB-SLAM over the other two direct methods 
- is the recognizing of clear features in terms of strucural differences in the scenes. Though, DSO and DSM also regard the differences in pixel intensities
- ORB, as described in section \ref{refasdf}, detects the features on different scale levels and ensures, that the regarded features are in fact significant. 
+ is the recognition of clear features in terms of structural differences in the scenes. Though, DSO and DSM also regard the differences in pixel intensities
+ ORB, as described in section \ref{orbcomp}, detects the features on different scale levels and ensures, that the regarded features are in fact significant. 
  This also became clear when observing the point cloud. All significant features, and therefore important features for autonomous navigation, were successfully 
- marked with a computed point. For example, this can be seen at the leiter?? in image three of figure \ref{fig:pointcloud}, where all sprossen contain at least 
+ marked with a computed point. For example, this can be seen at the ladder in image three of figure \ref{fig:pointcloud}, where all ladder rungs contain at least 
  one point. 
  
  After closely observing the point clouds, it became clear, that the point clouds of DSO, often times generate point clouds, where multiple layers of 
- points were falsly generated, where all points had the same clear distance to the ground truth point cloud. This may be a result of working of DSO slam, 
- where keyframes, that are marginalized, are removed permanently. When revisiting areas, the points are again generated. This means that all errors made
- in the sequence accumulate and when an area is revisited, significant errors in the point cloud can be made. This can be seen when looking at the 
- third image closely. When looking at the matraccess in the middle of the room, the accumulated error expresses itself by points hovering in the air 
+ points were falsely generated and all points had the same clear distance to the ground truth point cloud. This may be a result of the functionality of DSO slam, 
+ where keyframes, that are marginalized, are removed permanently. When revisiting areas, the points are regenerated. This means that all errors made
+ in the sequence accumulate and when an area is revisited, significant errors in the point cloud can occur. This can be seen when looking at the 
+ third image closely. When looking at the mattress in the middle of the room, the accumulated error expresses itself by points hovering in the air 
  in a clear plane. 
- 
- % irgendwo noch das dynimaische umgebung problem für slam ist. 
 
 	\begin{figure}%
     \centering
@@ -112,76 +131,83 @@ What becomes clear at first glance is, that as mentioned, ORB generates only few
 	in most sequences. 
 	
 	\begin{table}
-	\caption{Absolute number of points and distance to closest point in the ground truth point cloud in meter for each algorithm and sequence.}
+	\caption{Absolute number of points and mean distance to closest point in the ground truth point cloud in meter for each algorithm and sequence averaged over all runs.}
 	\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
 	\hline
 	Sequence Name& ORB & DSM & DSO \\
 	\hline
-	MH\_01\_easy & 8958 (/) & 675720 (/) & 361633 (/)\\
-	MH\_02\_easy & 8692 (/) & 700920 (/) & 343804 (/)\\
-	MH\_03\_medium & 7445 (/) & 614264 (/) & 371752 (/)\\
-	MH\_04\_difficult & 7943 (/) & 495752 (/) & 208445 (/)\\
-	MH\_05\_difficult & 8373 (/) & 517712 (/) & 232415 (/)\\
-	V1\_01\_easy & 7075 (0.049) & 6108440 (0.066) & 374257 (0.066)\\
-	V1\_02\_medium & 6517 (0.042) & 648440 (0.187) & 366513 (1.458)\\
-	V1\_03\_difficult & 7983 (0.052) & 775080 (0.092) & 448212 (0.459)\\
-	V2\_01\_easy & 5688 (0.049) & 584552 (0.58) & 247905 (0.086)\\
-	V2\_02\_medium & 8129 (0.074)& 733992 (0.078) & 490608 (0.104)\\
-	V2\_03\_difficult & 7359 (0.17) & 921312 (0.645) & 465396 (0.677)\\
+	MH\_01\_easy & 9959.7 (/) & 683237.3 (/) & 371389.7 (/)\\
+	MH\_02\_easy & 9551 (/) & 678000.0 (/) & 342405.7 (/)\\
+	MH\_03\_medium & 7652.7(/) & 634178.7 (/) & 372070.3 (/)\\
+	MH\_04\_difficult & 10084.3 (/) & 505642.7 (/) & 211698.7 (/)\\
+	MH\_05\_difficult & 10607.3 (/) & 505677.3 (/) & 234682.7 (/)\\
+	V1\_01\_easy & 8088.3 (0.0418) & 582530.7 (0.0593) & 372805.7 (0.0734)\\
+	V1\_02\_medium & 7927.3 (0.0486) & 642992.0 (0.0672) & 356028.7 (0.6028)\\
+	V1\_03\_difficult & 9373.7 (0.3137) & 786626.7 (0.0955) & 445751.0 (0.6416)\\
+	V2\_01\_easy & 10154.0 (0.0515) & 589416.0 (0.0736) & 244025.7 (0.0927)\\
+	V2\_02\_medium & 9007.7 (0.0509)& 785309.3 (0.1557) & 494689.7 (0.0976)\\
+	V2\_03\_difficult & 10985.7 (0.4350) & 831517.3 (0.7208) & 464663.3 (0.6189)\\
 	\hline
 	\end{tabular}
 	\label{table:pointcloud}
 	\end{table}
 	
 	However, regarding the accuracy of the computed points by the algorithms, again ORB-SLAM shows the best performance. In table \ref{table:pointcloud}, 
-	for all sequences, where a groundtruth pointcloud exists, the distance to the closest point in the groundtruth point cloud is computed by randomly sampling
-	500 points per algorithm and sequence. In all except the last, ORB-SLAM yields a mean distance of less than 10cm while DSM and DSO SLAM also yield results 
-	greater than 50 cm for certain sequences. 
+	for all sequences, where a ground truth point cloud exists, the distance to the closest point in the ground truth point cloud is computed by randomly sampling
+	150 points per algorithm and sequence. The means of each run again averaged an shown in table \ref{table:pointcloud}. 
 	
+	\fig{img/pq_dist.png}{Boxplot of the means for each run of the euclidean distances between an evaluated point and the closest point of the ground truth point cloud.
+	For computational feasibility, for each sequence, run and algorithm, 150 points for evaluation are sampled randomly}{fig:boxplot_pq}{1}
 	
-	\fig{img/pq_dist.png}{Boxplot of the euclidean distances between an evaluated point and the closest point of the ground truth point cloud.
-	For computational feasibility, for each sequence and algorithm, 500 points for evaluation are sampled randomly}{fig:boxplot_pq}{1}
+	The result is also shown in figure \ref{fig:boxplot_pq}, where the correlation between the trajectory accuracy and the point cloud accuracy become clearly 
+	visible. Averaged over all runs and sequences, a point generated by ORB SLAM lies 15cm from the next ground truth point, DSM 19cm and DSO 35cm. 
+	Unlike the trajectory error, the point cloud error of ORB is still the smallest when the Sequences V103 and V203 are not considered. Then ORB SLAM 
+	only causes an error of 4.8cm, DSM of 8.8cm and DSO of 21cm. This is because ORB SLAM doesn't generate as many outliers as DSO and DSM SLAM, as it can be seen 
+	in figure \ref{fig:distr}.
+	
+	\fig{img/pc_distr.png}{Distribution of the error distances of Sequence V101 and run 1.}{fig:distr}{1}
 	
 	
 
-\subsection{Calculation Time}
+\subsection{Computation Time}
 
-	For each sequence and algorithms, the computational time was taken, that the algorithm took, to complete the computation of the sequence. 
-	The time needed for initialization was not considered for the absolut time. 
+	For each sequence and algorithms, the computation time was taken, that the algorithm took, to complete the computation of the sequence. 
 	
-	In order to evaluate, if an algorithm can run in realtime, the absolut times have to be broken down into the computed frames per second.
-	The euroc dataset consists of sequences recorded at a frame frequence of 20 frames per second. This means the total frames per sequence 
-	are amount to duration\_of\_sequence x 20. For the computed frames per second, this value is then devided by the time the algorithm needed 
+	In order to evaluate, if an algorithm can run in realtime, the absolute times have to be broken down into the computed frames per second.
+	The EuRoC dataset consists of sequences recorded at a frame frequency of 20 frames per second. This means the total frames per sequence 
+	amount to the duration of sequence in seconds times 20. For the computed frames per second, this value is then divided by the time the algorithm needed 
 	to process the sequence. 
 	
-	It is possible to decrease the frame 
-	frequence, but this will also increase the risk of loosing the tracking, since the steps between the frames are greater and 
-	the ??foreward motion model?? cannot pridict the new position as well für einen gewissen algo. % quelle
+	In order to lower the computation time, it is possible to decrease the frame 
+	frequency, but this will also increase the risk of loosing the tracking, since the steps between the frames are greater and 
+	the constant velocity model cannot perform an as accurate initial  prediction of the new position. Also, it is possible to change the hyper-parameters of 
+	the algorithms, which can increase the computation speed. For example, instead of extracting 2000 features per image, 
+	only 1000 can be considered. Finally, the computation speed can be decreased by decreasing the resolution of the input images 
+	or by upgrading the hardware with a better processor or a GPU. 
 	
-	The results are displayed in table \ref{table:comp_time}. ORB-SLAM processes the frames at a frame per second rate ranging from 11,1 (V102) to 16,1 (V203), 
-	DSM SLAM processes the frames at a range from 0,9 (V103) to 3,3 (MH01) frames per second and DSO slam at a rate in range of 1,5 (V202) to 4,9 (MH01). Thus, 
-	none of the evaluated slam algorithms processes any of the evaluated sequences in realtime. 
+	The results are displayed in table \ref{table:comp_time}. ORB-SLAM processes the frames at a frame per second rate of 17, 
+	DSM SLAM processes the frames at 4.17 frames per second and DSO SLAM at a rate of 5.22. Thus, 
+	none of the evaluated SLAM algorithms processes any of the evaluated sequences in realtime, but ORB-SLAM is at least 
+	three times as fast as both other algorithms in processing the frames. 
 	
-	% DSO enforce realtime not working
-
 	\begin{table}
-	\caption{Computation time (excluded time needed for initialization) of each sequence and algorithm. In parentheses the 
+	\caption{Computation time (excluded time needed for initialization) of each sequence and algorithm, averaged over all runs. In parentheses the 
 	resulting computed frames per second are given.}
 	\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
 	\hline
 	Sequence Name & Computation Time in $s$ ORB & Computation Time in $s$ DSM & Computation Time in $s$ DSO \\
 	\hline
-	MH\_01\_easy & 257 (14,2) & 1098 (3,3) & 749 (4,9)\\
-	MH\_02\_easy & 209 (14,4) & 984 (3,1) & 690 (4,4)\\
-	MH\_03\_medium & 198 (13,3) & 1369 (1,9) & 707 (3,7)\\
-	MH\_04\_difficult & 165 (12) & 896 (2,2) & 504 (3,9)\\
-	MH\_05\_difficult & 193 (11,5) & 825 (2,7) & 633 (3,5)\\
-	V1\_01\_easy & 253 (11,4) & 1383 (2,1) & 905 (3,2)\\
-	V1\_02\_medium & 150 (11,1) & 1550 (1,1) & 820 (2,0)\\
-	V1\_03\_difficult & 186 (11,3) & 2262 (0,9) & 1134 (1,9)\\
-	V2\_01\_easy & 187 (12) & 1045 (2,1) & 612 (3,7)\\
-	V2\_02\_medium & 162 (14,2) & 1675 (1,4) & 1522 (1,5)\\
-	V2\_03\_difficult & 143 (16,1) & 1600 (1,4) & 793 (2,9)\\
+	MH\_01\_easy & 215 (17.0) & 688 (5.30) & 798 (4.56)\\
+	MH\_02\_easy & 174 (17.2) & 538 (5.57) & 732 (4.10)\\
+	MH\_03\_medium & 157 (16.9) & 656 (4.02) & 403 (6.85)\\
+	MH\_04\_difficult & 117 (16.9) & 394 (5.02) & 260 (7.69)\\
+	MH\_05\_difficult & 132 (16.8) & 385 (5.76) & 372 (5.97)\\
+	V1\_01\_easy & 168 (17.1) & 612 (4.71) & 628 (4.58)\\
+	V1\_02\_medium & 101 (16.6) & 678 (2.46) & 345 (4.99)\\
+	V1\_03\_difficult & 123 (17.1) & 907 (2.32) & 654 (3.22)\\
+	V2\_01\_easy & 131 (17.1) & 461 (4.87) & 357 (6.28)\\
+	V2\_02\_medium & 136 (17.0) & 783 (2.95) & 415 (5.55)\\
+	V2\_03\_difficult & 133 (17.1) & 796 (2.89) & 640 (3.60)\\
 	\hline
 	\end{tabular}
 	\label{table:comp_time}

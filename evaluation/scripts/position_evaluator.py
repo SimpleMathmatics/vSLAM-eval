@@ -41,6 +41,7 @@ class Evaluator:
             )
         return fig
 
+
     def create_pos_dif_plots(self):
         # transform via pca and plot pc1 against pc2
         pca1 = sd.PCA(n_components=2)
@@ -97,6 +98,7 @@ class Evaluator:
                                 "dist": np.array(dists)})
 
         return dist_df
+
 
 
 if __name__ == "__main__":

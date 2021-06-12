@@ -42,9 +42,9 @@ The first recognizable developed SLAM algorithms relied on optimization methods 
  is based on the extended Kalman filter and is called MonoSLAM \cite{mono}. 
  
  The computational cost of the MonoSLAM algorithm, and most other vSLAM algorithms grows in proportion to the number of observed features, making it very hard to obtain real-time 
- computation for medium or large environments \cite{envolved}. Obviously, an algorithm runs in real-time, when 
+ computation for medium or large environments \cite{evolved}. Obviously, an algorithm runs in real-time, when 
  the algorithm can process the images, that are fed to it, just as fast as they are produced. Ideally, it should 
- be running recognizably faster on average, since processing time per image can fluctate. 
+ be running recognizably faster on average, since processing time per image can fluctuate. 
 
  In 2007, PTAM contributed with improvements by not running the tracking and mapping processes
  sequentially, like previous approaches, but rather to run these processes in parallel on two distinctive threads \cite{ptam}. 
@@ -59,9 +59,9 @@ The first recognizable developed SLAM algorithms relied on optimization methods 
 	allowing for a more finely grained geometry representation (pixelwise inverse depth). \cite{dso}
   \end{quote}
 
-Feature based methods on the other hand, compute features for each frame, that serve as input for further computation. These features usually are subsets of pixels, that have remarkable 
+Other than direct SLAM algorithms, feature based methods, compute features for each frame, that serve as input for further computation. These features usually are subsets of pixels, that have remarkable 
 intensities and arrangements, such as corners (landmarks). These methods evaluate the upper term by computing the geometric error, since the feature-positions are geometric 
-quantities. A main advantage of feature based methods is the rubustness over geometric distortions present in every-day-cameras \cite{dso}. 
+quantities. A main advantage of feature based methods is the robustness over geometric distortions present in every-day-cameras \cite{dso}. 
 
 While multiple evaluation studies exist \cite{eval1} \cite{eval2} \cite{pq} \cite{orb}, \cite{dso}, the comparison of the results is difficult. 
 
@@ -105,8 +105,6 @@ and vocabulary used in SLAM first.
 		Some algorithms create a covisibility graph in order to link keyframes and gain more information about the environment by having a different representation. 
 		In a covisibility graph, nodes are representing features and edges the covisibility between them. 
 		This can help the algorithms to perform optimizations and loop closing as explained in the following section.
-		updating the edges resulting from the shared map
-		points with other keyframes.
 		
 		\subsubsection{Group of Rigid Transformations in 3D}\label{pose}
 		
@@ -296,7 +294,7 @@ and vocabulary used in SLAM first.
 	
 	\end{enumerate}
 	
-	\subsubsection{Complement}
+	\subsubsection{Complement}\label{complement}
 	
 	Please note, that this is the base model of ORB-SLAM. Multiple amendments, forks and merge requests exists, either made by the creators themselves, 
 	or by external developers. Though it was slighly abbreviated for our purposes, in the evaluation part of this work, ORB-SLAM3 is used. 
@@ -310,7 +308,7 @@ and vocabulary used in SLAM first.
 	
 	%#############################################################################################################################################
 
-	\subsection{DSO-SLAM}
+	\subsection{DSO-SLAM}\label{dsosec}
 	
 	Direct Sparse Odometry was developed in 2016 by the Technische Universität München. % hier noch paar sätze dazu
 	
@@ -318,7 +316,7 @@ and vocabulary used in SLAM first.
 	
 	The model optimizes the photometric error over a window of recent frames. 
 	
-	The camera is calibrated in two different ways. First a projection function is computed, considering the focal length and the optical centers, 
+	The camera is calibrated in two different ways. At first a projection function is computed, considering the focal length and the optical centers, 
 	in order to map a pixel point in the image on a 3D map point (and the other way around). Secondly, a photometric camera calibration is applied. 
 	This calibration accounts for camera specific non-linear response functions, that map scene irradiances on pixel intensities on the one hand and 
 	camera specific lens attenuation on the other hand. 
@@ -403,7 +401,7 @@ to motion blur, and providing sufficient information
 
 	\subsection{DSM-SLAM}
 	
-	Direct Sparce Mapping SLAM was released in april 2019 and works similar to DSO slam but claims to be more robust when revisiting 
+	Direct Sparce Mapping SLAM was released in April 2019 and works similar to DSO slam but claims to be more robust when revisiting 
 	areas. The algorithm can be separated into a tracking 
 	front-end and an optimization back-end that run on parallel threads. 
 	
@@ -423,7 +421,7 @@ to motion blur, and providing sufficient information
 	The temporal parts regards $N_t$ keyframes as recent sliding window approach, just like DSO. With similar 
 	critirias for keyframe selection as DSO, whenever a new keyframe is inserted, another one is removed (from the temporal part).
 
-	In order to regard re-observed points, DSM also considers $N_c$ covisibil keyframes to fill the latest keyframe $I_0$ with map points, favoring 
+	In order to regard re-observed points, DSM also considers $N_c$ co-visibil keyframes to fill the latest keyframe $I_0$ with map points, favoring 
 	map points in depleted areas. This is achieved by the following steps: 
 	
 	\begin{enumerate}
@@ -432,19 +430,19 @@ to motion blur, and providing sufficient information
 	All map points from the temporal part are mapped into the latest keyframe. For every pixel, the euclidean distance to the closest map point 
 	is computed. Obviously, large distances suggest depleted areas.
 	
-	\item{Covisibil keyframe selection}
+	\item{Co-visibil keyframe selection}
 	
-	Select the keyframe within the old keyframes with the most map points in the above selected depleted area. Map points, where the viewing angle 
+	The keyframe within the old keyframes with the most map points in the above selected depleted area are chosen. Map points, where the viewing angle 
 	lies too far from the latest keyframe are removed from the local map. 
 	This can be determined from the pose $T_i \in \text{SE}(3)$ that is saved for each keyframe $I_i$. 
 	
 	\item{Update distance map}
 	
-	Update the distance map, calculated in step 2, with the new selected keyframe. 
+	The distance map, calculated in step 2, is updated with the new selected keyframe. 
 	
 	\item{iterate}
 	
-	Iterate until $N_c$ keyframes are selected for the covisibility part. 
+	This process iterates until $N_c$ keyframes are selected for the covisibility part. 
 	
 	\end{enumerate}
 	
@@ -454,13 +452,13 @@ to motion blur, and providing sufficient information
 	
 	\item{Frame Tracking, New Keyframe decision, New Map Point Tracking}
 	
-	Frame Tracking, New Keyframe decision and New Map Point Tracking work similar to DSO slam. The main idea is always to manipulate the local map 
-	by minimizing the photometric error displayed in equation \ref{eq:test}. 
+	Frame Tracking, New Keyframe decision and New Map Point Tracking work similar to DSO SLAM. The main idea is always to manipulate the local map 
+	by minimizing the photometric error displayed in equation \ref{targetterm}. 
 
 	However, unlike DSO SLAM, in each frame, the local map 
 	consisting of the $N_t + N_c$ keyframes (referenced from the latest keyframe) and contained map points is projected into the frame. 
-	Obviously, this also brings the difference compared to DSO slam, that keyframes and map points are not permanently culled from the 
+	Obviously, this is the main difference compared to DSO SLAM, that keyframes and map points are not permanently culled from the 
 	map, and may be reactivated once the keyframe appears in the covisibility graph. Also, the management of outliers is similar to DSO-SLAM, 
-	Trying to remove outliers as early as possible, in order to save computational resources. 
+	trying to remove outliers as early as possible, in order to save computational resources. 
 	\end{enumerate}
  
