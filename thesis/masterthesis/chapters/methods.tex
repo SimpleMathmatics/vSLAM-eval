@@ -4,7 +4,7 @@
 \subsection{Introduction and History of SLAM}
 
 SLAM algorithms have to solve a chicken-egg-problem, since in order for the robot to localize itself within a unknown environment, 
-it needs a map. However, for building a map, the robot needs to localize itself within it \cite{chicken}. Until today, multiple 
+it needs a map. However, for building a map, the robot needs to localize itself within it \cite{chicken}. Until today, a number of 
 different solutions for the problem were developed. 
 
 Today, the problem can be formally defined in a probabilistic way. The goal is to compute 
@@ -13,9 +13,9 @@ Today, the problem can be formally defined in a probabilistic way. The goal is t
 \mathbb{P}\left(m_{t+1},x_{t+1}|z_{1:t+1},u_{1:t}\right),
 \end{equation}
 
-where, $m_{t+1}$ is the map (point cloud of the surroundings) at timepoint $t+1$, $x_{t+1}$ the 
-camera orientation and position at timepoint $t+1$, $z_{1:t+1}$ all observations made to this timepoint and $u_{1:t}$ all historic control input. 
-In other words, a map and a series of positions should be computed, that fit the seen environment and the control inputs in the most likely manner. 
+where $m_{t+1}$ corresponds to the map (point cloud of the surroundings) at timepoint $t+1$, $x_{t+1}$ to the 
+camera orientation and position at timepoint $t+1$, $z_{1:t+1}$ to all observations made to this timepoint and $u_{1:t}$ all historic control input. 
+In other words, a map and a series of positions should be computed that fit the observed environment and the control inputs in the most likely manner. 
 However, most
 modern SLAM methods do not require the control input anymore but rather predict the next position with a motion model and validate it with an 
 optimization process. \cite{dso} \cite{orb}. 
@@ -24,7 +24,7 @@ This problem overview is displayed in figure \ref{fig:slamover}.
 \fig{img/slamoverview.png}{Overview of the SLAM concept. Source: \cite{hist2}}{fig:slamover}{0.8}
 
 With their work on the representation and estimation of spatial uncertainty \cite{hist1}
-Smith et al created the first relevant work in the field on SLAM in 1986. However, due to lacking computational resources, the engagement in this topic stayed mainly
+Smith et al. created the first relevant work in the field on SLAM in 1986. However, due to lacking computational resources, the engagement in this topic stayed mainly
 on a theoretical level. 
 
   \begin{quote}
@@ -34,23 +34,22 @@ manipulating geometric uncertainty. A key element of this
 work was to show that there must be a high degree of correlation between estimates of the location of different landmarks in a map \cite{hist2}.
   \end{quote}
 
-Their work suggested for the first time, that the estimation should be based on a large vector, containing all landmark observations, as shown in the formal definition of the problem in 
+Their work suggested for the first time that the estimation should be based on a large vector, containing all landmark observations, as shown in the formal definition of the problem in 
 expression \label{prob}.
 
-The first recognizable developed SLAM algorithms relied on optimization methods based on an extended Kalman filter, which is a non-linear state estimation approach
- by relying on a joint distribution of all measurements \cite{evolved}. The first monocular vSLAM algorithm, developed in 2003, 
+The first recognizable developed SLAM algorithms relied on optimization methods based on an extended Kalman filter, a non-linear state estimation approach
+ that depends on a joint distribution of all measurements \cite{evolved}. The first monocular vSLAM algorithm, developed in 2003, 
  is based on the extended Kalman filter and is called MonoSLAM \cite{mono}. 
  
- The computational cost of the MonoSLAM algorithm, and most other vSLAM algorithms grows in proportion to the number of observed features, making it very hard to obtain real-time 
+ The computational cost of the MonoSLAM algorithm, and most other vSLAM algorithms grows in proportion to the number of observed features, making it hard to obtain real-time 
  computation for medium or large environments \cite{evolved}. Obviously, an algorithm runs in real-time, when 
- the algorithm can process the images, that are fed to it, just as fast as they are produced. Ideally, it should 
- be running recognizably faster on average, since processing time per image can fluctuate. 
+ the algorithm can process the images that are fed to it just as fast as they are produced. Ideally, it should 
+ be running recognizably faster than real-time on average, since processing time per image can fluctuate. 
 
- In 2007, PTAM contributed with improvements by not running the tracking and mapping processes
- sequentially, like previous approaches, but rather to run these processes in parallel on two distinctive threads \cite{ptam}. 
+ In 2007, PTAM (Parallel Tracking and Mapping) contributed with improvements by not running the tracking and mapping processes sequentially, as previous approaches had done, but rather by running theses processes in parallel on two distinctive threads \cite{ptam}. 
  
- Then, more and more direct monocular visual vSLAM algorithm were developed. Unlike previous feature-based approaches, direct algorithms use the entire image as input in order to compute the term in expression \ref{prob}. 
- Therefore, the term is computed by optimizing the photometric error, which is the error, that results from comparing the intensities 
+ In the subsequent years, more and more direct monocular visual vSLAM algorithm were developed. Unlike previous feature-based approaches, direct algorithms use the entire image as input in order to compute the term in expression \ref{prob}. 
+ Therefore, the term is computed by optimizing the photometric error that results from comparing the intensities 
  of each pixel after transformation \cite{dso}.
 
   \begin{quote}
@@ -59,46 +58,44 @@ The first recognizable developed SLAM algorithms relied on optimization methods 
 	allowing for a more finely grained geometry representation (pixelwise inverse depth). \cite{dso}
   \end{quote}
 
-Other than direct SLAM algorithms, feature based methods, compute features for each frame, that serve as input for further computation. These features usually are subsets of pixels, that have remarkable 
-intensities and arrangements, such as corners (landmarks). These methods evaluate the upper term by computing the geometric error, since the feature-positions are geometric 
-quantities. A main advantage of feature based methods is the robustness over geometric distortions present in every-day-cameras \cite{dso}. 
+Other than direct SLAM algorithms, feature based methods, compute features for each frame, that serve as input for further computation. These features usually consist of subsets of pixels that have remarkable 
+intensities and arrangements, such as corners (landmarks). These methods evaluate the upper term by computing the geometric error, since the feature positions are geometric 
+quantities. A main advantage of feature-based methods is the robustness regarding geometric distortions present in every-day-cameras \cite{dso}. 
 
-While multiple evaluation studies exist \cite{eval1} \cite{eval2} \cite{pq} \cite{orb}, \cite{dso}, the comparison of the results is difficult. 
+While there are several evaluation studies \cite{eval1} \cite{eval2} \cite{pq} \cite{orb}, \cite{dso}, the comparison of the results is difficult. 
 
   \begin{quote}
-	One of the main benefits of a direct formulation is that it
-	does not require a point to be recognizable by itself, thereby
-	allowing for a more finely grained geometry representation (pixelwise inverse depth). \cite{align1}
+Whereas dozens of different techniques to tackle the SLAM problem have been presented, there is no gold standard for comparing the results of different SLAM algorithms. \cite{align1}
   \end{quote}
 
 On the one hand, the difficulty lies in the dependency of the results on the choice of the 
-alignment method, that transforms the resulting output of the vSLAM algorithm to the reference frame of the ground truth. 
-A different alignment function will result in a different result. This even led to a proposal of an evaluation method, that is not dependent on the ground truth reference 
-frame \cite{align1}. However, the proposed method has to be computed by performing manual steps, 
+alignment method that transforms the resulting output of the vSLAM algorithm to the reference frame of the ground truth. 
+A different alignment function will generate a different result. This even led to a proposal of an evaluation method that is not dependent on the ground truth reference 
+frame \cite{align1}. However, the proposed method has to be computed by performing manual steps 
 and therefore never became the standard.
 
- Also, the usage of different error metrices, the usage of different benchmark datasets and difference in computational power of the systems,
- on which the evaluation took place, can cause differences in results. 
+Also, the usage of different error matrices as well as different benchmark datasets and differences in computational power of the systems,
+ on which the evaluation took place, can cause deviations in results. 
 Finally, the accuracy of the point cloud, which is a crucial part for our proposed framework in the second part of this work to function correctly, has rarely been studied \cite{pq}. 
 
 Therefore, in this chapter, DSO-, DSM- and ORB SLAM are compared using the performance indicators explained in section \ref{methsec}. 
 
 
 Of all existing vSLAM algorithms, this evaluation considers DSO-, DSM- and ORB SLAM for the evaluation of being a suitable candidate for the autonomous exploration task.
-ORB-SLAM was considered, because it showed the very good results in different evaluations \cite{eval1} \cite{eval3}. 
-DSO-SLAM yield also good accuracy \cite{eval3}, and states to be able to track through scenes with very little texture, where feature based methods fail \cite{dso}.
-Finally, DSM states to be the most accurate direct SLAM method \cite{dsm}.   
+ORB SLAM was considered, because it showed the good results in different evaluations \cite{eval1} \cite{eval3}. 
+DSO SLAM yields also good accuracy \cite{eval3}, and states to be able to track through scenes with very little texture, where feature based methods fail \cite{dso}.
+Finally, DSM SLAM states to be the most accurate direct SLAM method \cite{dsm}.   
 
-In the following section, an overview over how the algorithms work is given for each method. In order to understand this section, it is crucial to clarify basic definitions 
+In the following section, an overview of how the algorithms work is given for each method. In order to understand this section, it is crucial to clarify basic definitions 
 and vocabulary used in SLAM first. 
 
 	\subsection{Definitions}
 		
 		\subsubsection{Keyframe}
 		
-		Most vSLAM Algorithms make usage of so called keyframes, as these keyframe-based approaches have proven to be more accurate \cite{keyframe}.
-		Keyframes are specific selected images of the input sequences or video streams. In most cases, the keyframes store all of the existing 
-		map points and all of the computations and optimizations are made, based on the keyframes and data stored within them. 
+		Most vSLAM Algorithms make usage of so called keyframes, as  keyframe-based approaches have proven to be more accurate \cite{keyframe}.
+		Keyframes are specifically selected images of the input sequences or video streams. In most cases, the keyframes store all of the existing 
+		map points as well as all of the computations and optimizations are made, based on the keyframes and data stored within them. 
 	
 		\subsubsection{Covisibility Graph}
 		
@@ -123,13 +120,13 @@ and vocabulary used in SLAM first.
 		
 		\subsubsection{Point cloud}
 		
-		When we speak of point cloud, we simply mean a formation of points in the three-imensional space, though having
-		an x y and z coordinate. Later in the evaluation of the algorithms, to save these point clouds, the PLY format has 
+		When we speak of a point cloud, we simply mean a formation of points in the three-imensional space, though having
+		an x, y and z coordinate. Later in the evaluation of the algorithms, to save these point clouds, the PLY format has 
 		been chosen. 
 		
 		\subsubsection{Camera Calibration and Distortion} \label{camcalib}
 		
-		F a SLAM algorithm to work with multiple camera types, such as fisheyes cameras, the camera input has to standardizes. Therefore, different 
+		For a SLAM algorithm to work with multiple camera types, such as fisheyes cameras, the camera input has to be standardizes. Therefore, different 
 		parameters must be provided. These parameters include 
 		
 		\begin{itemize}
@@ -141,32 +138,32 @@ and vocabulary used in SLAM first.
 		
 		The calculations of the resulting transformation in order to gain a standardized image, can be found in the OpenCV documentation. 
 
-	\subsection{ORB-SLAM}\label{orbcomp}
+	\subsection{ORB SLAM}\label{orbcomp}
 	
-	ORB SLAM is a feature based, state of the art slam method. The first version was published in 2015 \cite{orb}. 
-	Here, an overview of the functionality of ORB SLAM is provided. The Algorithms runs on three threats simultaneously.
+	ORB SLAM is a feature-based, state of the art SLAM method. The first version was published in 2015 \cite{orb}. 
+	Here, an overview of the functionality of ORB SLAM is provided by summarizing their published paper \cite{orb}. The algorithms run on three threats simultaneously.
 	Each thread performs one of the following tasks: Tracking, Local Mapping and Loop Closing. An overview over the tasks can be found 
 	in figure \ref{fig:orb_fig}. The explanation of these system components are described in the following subsections. 
 	A more detailed explanation can be found in the paper of Raul Mur-Artal et al \cite{orb}.
 	
-	\fig{img/orb_slam_overview.png}{Overview of the system components extracted from \cite{orb}}{fig:orb_fig}{0.7}
+	\fig{img/orb_slam_overview.png}{Overview of the system components extracted from \cite{orb}}{fig:orb_fig}{0.8}
 	
 	\subsubsection{Tracking}
 	
-	The tracking component determines the localization of the camera and decides, when a new keyframe is being inserted.
-	As it is shown in figure \ref{fig:orb_fig}, the tracking is performed in four steps.
+	The tracking component determines the localization of the camera and decides when a new keyframe is being inserted.
+	As shown in figure \ref{fig:orb_fig}, the tracking is performed in four steps.
 	
 	\begin{enumerate}
 	\item Feature Extracting 
 	
 	Features are extracted using Oriented FAST and Rotated BRIEF \cite{orb_feat}. This method starts by searching for 
-	FAST (Features from Accelerated and Segments Test). Therefor, for each pixel x in the image, a circle of 16 pixels around that pixel
-	are considered and checked if at least eight of these 16 pixels have major brightness differences. If so, the pixel x is considered as 
+	FAST (Features from Accelerated and Segments Test). Thus, for each pixel x in the image, a circle of 16 pixels around that pixel
+	are considered and checked wether at least eight of these 16 pixels demonstrate major brightness differences. If so, the pixel x is considered as 
 	a keypoint, since it is likely to be an edge or corner. This is repeated multiple times after downsizing the image up to a scale of eight. 
 	To extract features evenly distributed over the image, it is divided into a grid, trying to extract five features per cell. 
 	Extracting features this way, makes the algorithm more stable to scale invariance. 
-	Next the orientation of the extracted feature is calculated using an intensity centroid. 
-	Finally the features are converted into a binary vectors (ORB descriptor) using a modified version, which is more robust to rotation, of BRIEF descriptors (Binary robust independent elementary feature).
+	Next, the orientation of the extracted feature is calculated using an intensity centroid. 
+	Finally, the features are converted into a binary vectors (ORB descriptor) using a modified version, which is more robust to rotation, of BRIEF descriptors (Binary robust independent elementary feature).
 	These ORB descriptors are then used for all feature matching tasks. 
 	% wenn ich noch mehr brauch kann ich hier noch was adden. 
 	
@@ -179,7 +176,7 @@ and vocabulary used in SLAM first.
 	\item Track Local Map 
 	
 	When the camera pose is estimated, map point correspondences are searched in 
-	the local map, containing keyframes that contain the observed map points and
+	the local map, comprising keyframes that contain the observed map points and
 	the keyframes from the covisibility graph. The pose is then corrected with all
 	matched map points. 
 	
@@ -204,10 +201,10 @@ and vocabulary used in SLAM first.
 	\begin{enumerate}
 	\item{Keyframe Insertion} \label{bagofword}
 	
-	The keyframe is inserted in the covisibility graph. Then the spanning tree
+	The keyframe is inserted in the covisibility graph. Then, the spanning tree
 	is updated using the keyframe with the most common points with $K_i$.
 	Finally the keyframe is represented as a bag of words using the DBoW2 implementation. 
-	Therefor, the image is saved by the number of occurances of features found in a predefined
+	Therefore, the image is saved by the number of occurrences of features found in a predefined
 	vocabulary of features. When the vocabulary is created with images general enough, 
 	it can be used for most environments.
 
@@ -215,7 +212,7 @@ and vocabulary used in SLAM first.
 	\item{Recent Map Points Culling}
 	
 	A map point is removed from the map, when it is found in more than 
-	25/% in the frames where it is predicted to be visible. Also, 
+	25\% in the frames where it is predicted to be visible. Also, 
 	it must be observed from more than two keyframes if more than one keyframe 
 	has passed from map point creation. 
 	
@@ -228,13 +225,13 @@ and vocabulary used in SLAM first.
 	
 	\item{Local Bundle Adjustment}
 	
-	The keyframe poses $T_i \in \text{SE}(3)$ and Map Points $X_j \in \mathbb{R}^{3}$ 
+	The keyframe poses $T_i \in \text{SE}(3)$ and map points $X_j \in \mathbb{R}^{3}$ 
 	are optimized by minimizing the reprojection error to the matched keypoints $x_{i,j} \in \mathbb{R}^{2}$.
 	The error is computed by the following term:
 	
-	$$ e_{i,j} = x_{i,j} - \pi_i\left(T_i, X_j\right) $$. 
-	$i$ is the respective Keyframe and j the index of the map Point. 
-	$\pi_i$ is a projection function, calculation a transformation 
+	$$ e_{i,j} = x_{i,j} - \pi_i\left(T_i, X_j\right). $$ 
+	$i$ corresponds to the respective keyframe and $j$ to the index of the map point. 
+	$\pi_i$ is a projection function, calculating a transformation 
 	to project all keypoints on map points by minimizing a cost function, that
 	can be found in \cite{ba}.
 
@@ -252,10 +249,10 @@ and vocabulary used in SLAM first.
 	
 	\item{Local Keyframe Culling}
 	
-	With difference to other SLAM algorithm, ORB slam deletes redundant 
+	In contrast to other SLAM algorithm, ORB SLAM deletes redundant 
 	keyframes, which decreases computational efforts, since computational
 	complexity grows with the number of keyframes. All keyframes are deleted, 
-	where at least 90 percent of the map points can be found in at least three other 
+	in which least 90 percent of the map points can be found in at least three other 
 	keyframes. 
 	
 	
@@ -268,14 +265,14 @@ and vocabulary used in SLAM first.
 	\begin{enumerate}
 	\item{Loop Candidates Detection}
 	
-	First the similarity of $K_i$ to its neighbors in the covisibilty
+	First, the similarity of $K_i$ to its neighbors in the covisibilty
 	graph is computed by using the bag of words representation and a 
 	loop candidate $K_l$ might be chosen. 
 	
 	\item{Similarity Transformation}
 	
-	In this step the transformation is computed, to map the map points
-	from $K_i$ on $K_l$. Since scale can drift, also the scale is computed
+	In this step, the transformation is computed to map the map points
+	from $K_i$ on $K_l$. Since the scale can drift, it is computed
 	in addition to the rotation matrix and translation using the method of horn. 
 	
 	
@@ -296,29 +293,29 @@ and vocabulary used in SLAM first.
 	
 	\subsubsection{Complement}\label{complement}
 	
-	Please note, that this is the base model of ORB-SLAM. Multiple amendments, forks and merge requests exists, either made by the creators themselves, 
-	or by external developers. Though it was slighly abbreviated for our purposes, in the evaluation part of this work, ORB-SLAM3 is used. 
+	Please note that this is the base model of ORB SLAM. A number of amendments, forks and merge requests exist, either made by the creators themselves, 
+	or by external developers. Though it was slightly abbreviated for our purposes, in the evaluation part of this work, ORB SLAM3 is used. 
 	
 	The main feature that was added in this version and also affect the result, is the possibility to create multiple maps within one session. 
 	If the tracking is lost, simply a new map is created. When places are then revisited, the maps get merged and the tracking can therefore 
-	resumed normally.  This way, good performance results can be yielded, even with long periods of poor visual information \cite{orb3}. 
+	 be resumed normally.  This way, good performance results can be yielded, even with long periods of poor visual information \cite{orb3}. 
 	
-	In the second part of this work, ORB-SLAM2 was used. This is simply due to the fact, that compiling other versions on the platform described in the 
-	second chapter failed. However, for the monocular usage, to the authors best knowledge, no main differences are made to the above-described version. 
+	In the second part of this work, ORB SLAM2 was used. This is simply due to the fact that compiling other versions on the platform described in the 
+	second chapter failed. However, for the monocular usage, to the author's best knowledge, no main differences are made to the above-described version. 
 	
 	%#############################################################################################################################################
 
-	\subsection{DSO-SLAM}\label{dsosec}
+	\subsection{DSO SLAM}\label{dsosecc}
 	
-	Direct Sparse Odometry was developed in 2016 by the Technische Universität München. % hier noch paar sätze dazu
+	Direct Sparse Odometry was developed in 2016 by the Technische Universität München. Here, the published paper "Direct Sparse Odometry" \cite{dso} by the creators is summarized. 
 	
 	\subsubsection{Model Overview}\label{samemodel}
 	
 	The model optimizes the photometric error over a window of recent frames. 
 	
-	The camera is calibrated in two different ways. At first a projection function is computed, considering the focal length and the optical centers, 
+	The camera is calibrated in two different ways. At first, a projection function is computed, considering the focal length and the optical centers, 
 	in order to map a pixel point in the image on a 3D map point (and the other way around). Secondly, a photometric camera calibration is applied. 
-	This calibration accounts for camera specific non-linear response functions, that map scene irradiances on pixel intensities on the one hand and 
+	This calibration accounts for camera specific non-linear response functions that map scene irradiances on pixel intensities on the one hand and 
 	camera specific lens attenuation on the other hand. 
 	
 	The model relies on minimizing the photometric error. This error over all frames is given by
@@ -339,7 +336,7 @@ and vocabulary used in SLAM first.
 Our experiments have shown that 8 pixels, arranged in a
 slightly spread pattern [...] give a good trade-off
 between computations required for evaluation, robustness
-to motion blur, and providing sufficient information
+to motion blur, and providing sufficient information. \cite{dso}
 
 	\end{quote}
 	
@@ -349,7 +346,7 @@ to motion blur, and providing sufficient information
 	
 	The front end determine the sets $\mathcal{F}$, $\mathcal{P}_i$ and $\text{obs}\left(p\right)$. Also it initializes all parameters 
 	required to calculate the term \ref{targetterm}. 
-	Finally it decides, when to remove points, outliers and keyframes. Frame and point management are closer described in the following. 
+	Finally it decides, when to remove points, outliers and keyframes. Frame and point management are closer described in the following section. 
 	
 	\begin{enumerate}
 	\item{Frame Management}
@@ -382,7 +379,7 @@ to motion blur, and providing sufficient information
 	
 	\item{Point Management}
 	
-	DSO always tries to keep 2000 active points in the map. The first step is select candidates points of the frame. To obtain equally 
+	DSO always tries to keep 2000 active points in the map. The first step is select candidate points of the frame. To obtain equally 
 	distributed points, the image is split into blocks. In each block, the point with the largest gradient of pixel intensity is selected, if 
 	it is greater than a threshold, which is computed by adding seven to the overall median of the gradients. This is repeated twice while 
 	decreasing the threshold and doubling the block size, in order to also include points with weaker gradient. 
@@ -399,29 +396,30 @@ to motion blur, and providing sufficient information
 	
 	\end{enumerate}
 
-	\subsection{DSM-SLAM}
+	\subsection{DSM SLAM}
 	
-	Direct Sparce Mapping SLAM was released in April 2019 and works similar to DSO slam but claims to be more robust when revisiting 
+	Direct Sparce Mapping SLAM was released in April 2019 and works similar to DSO SLAM but claims to be more robust when revisiting 
 	areas. The algorithm can be separated into a tracking 
 	front-end and an optimization back-end that run on parallel threads. 
+	In this section, the respective paper of DSM SLAM \cite{dsm} is summarized. 
 	
 	\subsubsection{Model Overview}
 	
-		DSM uses the same model as DSO. The model is described in the previous section.
+		DSM SLAM uses the same model as DSO SLAM. The model is described in the previous section.
 	
 	\subsubsection{Front-End}
 	
-	The front-end, however, differs from DSO. While DSO cannot reuse points that have once being marginalized, DSM suggests a method 
+	The front-end, however, differs from DSO SLAM. While DSO SLAM cannot reuse points that have once being marginalized, DSM suggests a method 
 	to activate and inactivate keyframes and points to its needs. 
 	
 	\begin{enumerate}
 	\item{Keyframe and map point selection}
 	
 	When selecting keyframes and map points, two criteria play a role: the temporal and covisibility criteria. 
-	The temporal parts regards $N_t$ keyframes as recent sliding window approach, just like DSO. With similar 
-	critirias for keyframe selection as DSO, whenever a new keyframe is inserted, another one is removed (from the temporal part).
+	The temporal parts regards $N_t$ keyframes as recent sliding window approach, just like DSO SLAM. With similar 
+	critirias for keyframe selection as DSO SLAM, whenever a new keyframe is inserted, another one is removed (from the temporal part).
 
-	In order to regard re-observed points, DSM also considers $N_c$ co-visibil keyframes to fill the latest keyframe $I_0$ with map points, favoring 
+	In order to regard re-observed points, DSM SLAM also considers $N_c$ co-visibil keyframes to fill the latest keyframe $I_0$ with map points, favoring 
 	map points in depleted areas. This is achieved by the following steps: 
 	
 	\begin{enumerate}
@@ -440,7 +438,7 @@ to motion blur, and providing sufficient information
 	
 	The distance map, calculated in step 2, is updated with the new selected keyframe. 
 	
-	\item{iterate}
+	\item{Iterate}
 	
 	This process iterates until $N_c$ keyframes are selected for the covisibility part. 
 	
@@ -448,11 +446,11 @@ to motion blur, and providing sufficient information
 	
 	The entire keyframe and map point selection is displayed in figure \ref{fig:dsm_fig}. In this case, $N_t$ is equal to four and $N_c$ is equal to three.
 	
-	\fig{img/dsmKeyframes.png}{Keyframe and Point Selection of DSM. Source: \cite{dsm}}{fig:dsm_fig}{0.8}
+	\fig{img/dsmKeyframes.png}{Keyframe and point selection of DSM SLAM. Source: \cite{dsm}}{fig:dsm_fig}{0.8}
 	
 	\item{Frame Tracking, New Keyframe decision, New Map Point Tracking}
 	
-	Frame Tracking, New Keyframe decision and New Map Point Tracking work similar to DSO SLAM. The main idea is always to manipulate the local map 
+	Frame tracking, new keyframe decision and new map point tracking work similar to DSO SLAM. The main idea is always to manipulate the local map 
 	by minimizing the photometric error displayed in equation \ref{targetterm}. 
 
 	However, unlike DSO SLAM, in each frame, the local map 

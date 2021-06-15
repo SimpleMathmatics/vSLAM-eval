@@ -7,7 +7,7 @@ Multiple applications exist for the autonomous exploration and mapping tasks usi
  All three tasks should be performed simultaneously within an environment, which the drone has no information on a priori. 
  
  The localization task contains the estimation of the position of the drone within this environment and the mapping task refers to 
- the incremental creation of a 3-dimensional map. Multiple methods exist, that combine these two tasks in a so-called 
+ the incremental creation of a 3-dimensional map. There are several methods that combine these two tasks in a so-called 
  simultaneous localization and mapping (SLAM) algorithm. The development of these SLAM algorithms is one of the most researched topics 
 in the field of robotics \cite{slamintro}.
 
@@ -34,7 +34,7 @@ This work targets to answer two distinct research questions.
  these drones are very affordable, making it highly available for a larger user group. 
  
  
- Thus, for this first part of this work, three open-source monocular visual SLAM algorithms are evaluated. 
+ Thus, in the first part of this work, three open-source monocular visual SLAM algorithms are evaluated. 
   DSO (Direct Sparse Odometry) SLAM, DSM (Direct Sparce Mapping) SLAM and ORB (Oriented FAST and Rotated BRIEF)
  SLAM were investigated regarding the predefined criteria of the accuracy of the resulting trajectory estimation, the point cloud accuracy and computational speed. 
  
@@ -45,20 +45,20 @@ This work targets to answer two distinct research questions.
  \item{What is a suitable framework to test and develop fully automated exploration systems within a simulated environment?}
  
  
- In the second part of this work, a Roboter Operating System (ROS) framework, that enables users to develop a fully automated exploration system within 
- a virtual environment is proposed. This framework includes a process, that provides a simulated Gazebo environment, making it possible to navigate 
+ In the second part of this work, a Roboter Operating System (ROS) framework that enables users to develop a fully automated exploration system within 
+ a virtual environment is proposed. This framework includes a process that provides a simulated Gazebo environment, making it possible to navigate 
  a virtual drone within a simulated environment. The sensors and behavior of the drone are modeled realistically. Most importantly, the drone is equipped with a RGB 
- camera, making it possible to directly apply a vSLAM algorithm on the output. 
+ camera, which allows the direct application of a vSLAM algorithm on the output. 
  Furthermore, the most suitable algorithm, evaluated in the first part of the work is implemented in a subprocess of this framework. 
  
  While the functionality and current state of the art of methods tackling the path planning task of the automated system are described and a suggestion on how it could 
- be implemented into the framework is given in section \ref{path}, this work doesn't include an actual implementation of such an algorithm. 
+ be implemented into the framework is given in section \ref{path}, this work does not include an actual implementation of such an algorithm. 
  Such implementations are left for further research. 
  
- The suggest framework should rather function as an option for users to implement and test out new path planning algorithm, providing optimal 
+ The suggested framework should rather function as an option for users to implement and test out new path planning algorithm, providing optimal 
  prerequisites to do so. 
  
- For example, the subprocess of the framework, in which the path planning algorithm should be running can be provided with all necessary data, 
+ For example, the subprocess of the framework, in which the path planning algorithm should run can be provided with all necessary data, 
  such as sensor data of the drone and the estimated orientation, position and point cloud by the vSLAM algorithm. This stream data is preprocessed 
  and standardized 
  in real time, enabling users to directly use it for their purposes. 

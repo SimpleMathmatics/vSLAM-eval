@@ -41,6 +41,10 @@ mean_dist = sapply(ev_res, FUN = function(list_oi){
   return(mean(list_oi$traj_dist))
 })
 
+mean_dist_pc = sapply(ev_res, FUN = function(list_oi){
+  return(mean(list_oi$pq_errors))
+})
+
 
 g <- ggplot(data=perc_df, aes(seq, perc_tracked, fill=algorithm)) + geom_boxplot()
 g <- g + xlab(label="Sequence") + ylab("Percentage of the Sequence, which was tracked by the algorithm")
@@ -54,6 +58,13 @@ perc_df <- data.frame(
   "perc_tracked" = perc_tracked
 )
 
+pq_error_df <- data.frame(
+  "algorithm" = algos, 
+  "seq" = sequences, 
+  "run" = runs, 
+  "pc_error" = mean_dist_pc
+)
+
 mean_dist_df <- data.frame(
   "algorithm" = algos, 
   "seq" = sequences, 
@@ -65,7 +76,8 @@ fps_df <- data.frame(
   "algorithm" = algos, 
   "seq" = sequences, 
   "run" = runs, 
-  "fps" = fps
+  "fps" = fps,
+  "proc_time" = ttime
 )
 
 g <- ggplot(data=mean_dist_df, aes(seq, distance, fill=algorithm)) + geom_boxplot()
@@ -356,7 +368,7 @@ points_DSO <- sapply(Seqs, function(seq_oi){
 
 # computation time 
 
-fps_df <- fps_df %>% group_by(algorithm, seq) %>% summarize(mean(fps))
+fps_df_agg <- fps_df %>% group_by(algorithm, seq) %>% summarize(mean(proc_time))
 
 
 

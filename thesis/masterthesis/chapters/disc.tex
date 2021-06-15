@@ -2,9 +2,40 @@
 
 \subsection{Conclusion of SLAM-Algorithm Evaluation}
 
-% hier auch noch CNN slam erwähnen
-% nur default parameters used...mit extra vocab und grid search noch ausbesserbar. 
-% dso real time -> not working with parameters (only with gpu possible -> not on drone)
-% 
+	The evaluation showed, that ORB SLAM outperforms DSO- and DSM SLAM regarding trajectory accuracy, point cloud accuracy and computation time. 
+	Only when sequences are removed, where tracking was lost, DSM SLAM yielded a trajectory accuracy one cm better than ORB SLAM. The only major 
+	drawback, when using ORB SLAM in the framework introduced in the next chapter, is the low number of generated points. However, these 
+	points are more accurate and ORB SLAM reveals a lower computational time, which is also relevant for the later discussed path planning algorithm. 
 
-% ganzes system ausprobierren und kpis festlegen.
+	Computation is not yet in real time for ORB, however in order to lower the computation time, it is possible to decrease the frame 
+	frequency, but this will also increase the risk of losing the tracking, since the steps between the frames are greater and 
+	the constant velocity model cannot perform a sufficient accurate initial  prediction of the new position. Also, it is possible to change the hyper-parameters of 
+	the algorithms to increase the computation speed. For example, instead of extracting 2000 features per image, 
+	only 1000 can be considered. Finally, the computation speed can be increased by decreasing the resolution of the input images 
+	or by upgrading the hardware with a better processor or a GPU. 
+
+\subsection{Future Options}
+
+In the recent years, machine learning solutions for the SLAM problem where examined \cite{cnnslam2} \cite{deepslam}. Thus, in the works "D3VO: Deep Depth, Deep Pose and Deep Uncertainty
+for Monocular Visual Odometry" \cite{deepslam} and "CNN-SLAM: Real-time dense monocular SLAM with learned depth prediction" \cite{cnnslam2} Yang et al.
+ and tateno et al. introduce the usage of neuronal nets to either support the depth, pose and and uncertainty estimation or even do the prediction only based on 
+ the output of the Convolutional neuronal network. They claim to yield excellent results.
+
+\begin{quote}
+We systematically evaluated the VO performance of D3VO on the two datasets.
+D3VO sets a new state-of-the-art on KITTI Odometry and
+also achieves state-of-the-art performance on the challenging EuRoC MAV, rivaling with leading mono-inertial and
+stereo-inertial methods while using only a single camera.
+\end{quote}
+
+Unfortunately, these works are closed-source and thus can not be used for the proposed framework in the second chapter. However, machine learning approaches 
+hold great opportunities for the future, as they have been outperforming traditional approaches in most other computer vision related areas.  
+
+\begin{quote}
+Deep learning has swept most areas of computer vision
+– not only high-level tasks like object classification, detection and segmentation \cite{p1} \cite{p2} \cite{p3}, but also low-level ones
+such as optical flow estimation \cite{p4} \cite{p5} and interest point
+detection and description \cite{p6} \cite{p7}. \cite{deepslam}
+\end{quote}
+
+

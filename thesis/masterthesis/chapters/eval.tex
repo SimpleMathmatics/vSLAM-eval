@@ -1,6 +1,6 @@
 \section{Evaluation Methods}\label{methsec}
 
-To evaluate the performance of DSO-, DSM- and ORB-SLAM, the algorithms are fed with video sequences contained in the 
+To evaluate the performance of DSO-, DSM- and ORB SLAM, the algorithms are fed with video sequences contained in the 
 European Robotics Challenge (EuRoC) benchmark dataset. The algorithms are changed in a way, that they save the computed 
 trajectory estimation to a .txt file and the resulting point cloud to a .PLY file. 
 
@@ -35,7 +35,7 @@ This way, the results are more reproducible.
 
 	\begin{table}
 	\caption{Overview of the sequences included in the EuRoC Dataset}
-	\begin{tabular}{ |p{3cm}||p{3cm}|p{2cm}|p{2cm}|p{3cm}|}
+	\begin{tabular}{ |p{3cm}||p{3cm}|p{2cm}|p{2cm}|p{2cm}|}
 	\hline
 	Sequence Name& Duration in $s$ & Average Velocity in $ms^{-1}$ & Angular Velocity in $rad s^{-1}$ &Point cloud available\\
 	\hline
@@ -56,7 +56,7 @@ This way, the results are more reproducible.
 	\end{table}
 
 \subsection{Evaluation Criteria}
-\subsubsection{Trajectory Comparison}
+\subsubsection{Trajectory Comparison}\label{poseval}
 
 	\begin{enumerate}
 	\item{Trajectory Alignment}\label{umeyamesec}
@@ -65,7 +65,7 @@ This way, the results are more reproducible.
 	position, the trajectories need to be aligned. This is because most SLAM Algorithms initialize the origin
 	of their coordinate system with the camera position from the first frame. Whereas the ground truth of the 
 	trajectory uses a different origin and orientation. As a consequence, evaluated points $ \left\{{\widehat{x}_i}\right\}_{i=0}^{N-1}$ can not be 
-	compared to the ground truth points $\left\{{x_i}\right\}_{i=0}^{N-1}$
+	compared to the ground truth points $\left\{{x_i}\right\}_{i=0}^{N-1}$.
 	Also, as described in the vSLAM Algorithms section,
 	
 	% input link of section here
@@ -79,7 +79,7 @@ This way, the results are more reproducible.
 	S = \argmin_{S' = \left\{R', t', s' \right\}} \sum_{i = 0}^{N-1} \norm{x_i - s'R'\widehat{x}_i - t'}^2
 	\end{equation}\label{alignmin}
 	
-	In other words, the evaluated points are rotated, translated and scaled in a way, that the sum squared error over the respective point
+	In other words, the evaluated points are rotated, translated and scaled in a way, that the sum squares error over the respective point
 	distances is minimized. The upper expression is calculated by using the method of Umeyama \cite{ume}. 
 	
 	Similar to a principal component analysis, Umeyama uses the singular value decomposition of the covariance 
@@ -114,14 +114,14 @@ This way, the results are more reproducible.
 	In figure \ref{fig:trerror} the computed errors are displayed. 
 	
 	
-	These error terms are visualized over time and the overall mean is determined and again visualized with boxplots for each method.
+	These error terms are visualized over time and the overall mean is determined and again visualized with boxplots for each method, sequence and run.
 	Additionally, the flight paths are plotted against each other after alignment, to gain visual information of the trajectories. 
 	This is done for all three axes. 
 
 	
 	\end{enumerate}
 	
-\subsubsection{Point cloud evaluation}
+\subsubsection{Point cloud evaluation}\label{pceval}
 
 The algorithms were manipulated in a way, that after evaluating each sequence, they write a .PLY file with all map points to 
 the device. These map points are then evaluated by the following methods. Obviously, this is only done for the latter six sequences, 
@@ -132,7 +132,7 @@ trying to figure out, if the SLAM algorithms are also able to detect small obsta
  navigation of the drone. 
 	
 	\begin{enumerate}
-	\item{Positional Error}
+	\item{Positional Error}\label{poseval}
 	
 	Again, the map points are transformed using the method of Umeyama. However, it is crucial to note that the computed 
 	$S = \left\{R,t,s\right\}$ is not a result of aligning the point clouds, but rather the parameters for aligning the trajectories 
@@ -140,7 +140,7 @@ trying to figure out, if the SLAM algorithms are also able to detect small obsta
 	
 	To compare the the transformed computed point cloud $P' = \left\{{\widehat{p'}_i}\right\}_{i=0}^{M_{\text{eval}}-1}$ to the ground truth point cloud
 	$\left\{p_i\right\}_{i=0}^{M_{\text{gt}}-1}$, for a point in the evaluated point cloud, the distance to the closest point in the ground truth
-	point cloud is calculated. This is assumed to be the points ground truth position, since with several 100000-points in ground truth, this point in 
+	point cloud is calculated. This is assumed to be the point's ground truth position, since with several 100000-points in ground truth, this point in 
 	the ground truth point cloud should not be too far away from the orthogonal projection of the evaluated point. 
 	
 	\fig{img/orthProj.png}{Orthogonal projection of a point in the evaluated point cloud ($\widehat{p_1}$) on the planar of the ground truth point cloud.
@@ -150,13 +150,13 @@ trying to figure out, if the SLAM algorithms are also able to detect small obsta
 	the smaller is the distance in between them and therefore the smaller the error $e$ becomes.
 
 	Since calculating distances from several 100000 points to several 100000 points is computational very expensive, and in the current setup applying 
-	it an all sequences and algorithms would require more than a day, only a subset of $P'$ of 1000 points per sequence and algorithms
-	is taken into consideration. The indices for the subset $I_{\text{sub}}$ are sampled from a even distribution of ${i}_{i = 0}^{M_{\text{eval}}-1}$. 
+	it an all sequences, algorithms and runs would require several days, only a subset of $P'$ of 150 points per sequence and algorithms
+	is taken into consideration. The indices for the subset $I_{\text{sub}}$ are sampled from a even distribution of $\left\{i\right\}_{i = 0}^{M_{\text{eval}}-1}$. 
 	Then, as mentioned, distances to the closest point in the ground truth point cloud is calculated for the sampled subset 
 	$P'_{\text{sub}} = \left\{{\widehat{p'}_i}\right\}_{i \in I_{\text{sub}}} \subset P'$. 
 	
 	The error term for $\widehat{p}_i' \in P'_{\text{sub}}$ is then given by
-	$$ e_i = \argmin_{j \in {i}_{i=0}^{M_{\text{gt}}-1}} \lVert \mathbf{\widehat{p}_i' - p_j} \rVert_2 $$.
+	$$ e_i = \argmin_{j \in \left\{i\right\}_{i=0}^{M_{\text{gt}}-1}} \lVert \mathbf{\widehat{p}_i' - p_j} \rVert_2 $$.
 	
 	These error terms are then plotted within a boxplot for each method over all sequences. 
 	
@@ -171,14 +171,12 @@ trying to figure out, if the SLAM algorithms are also able to detect small obsta
 \subsubsection{Computation Time}
 	
 	Since the computational performance of an algorithm is crucial to perform in real time, the absolute time that is needed to process each 
-	sequence is measured for each algorithm. The time required for initialization is subtracted, since it is not decisive for the assessment, 
-	if the algorithm can be run in real time. For each sequence the resulting speed is additionally evaluated in computed frames per second. 
+	sequence is measured for each algorithm. For each sequence the resulting speed is additionally evaluated in computed frames per second. 
 	
 \subsection{Setup and Environment}
 
 	
-	The entire evaluation is run on a virtual machine. The virtual machine is running through the program VirtualBox provided by oracle.
-	The host system is a Lenovo yoga notebook with eight GB of RAM and the basic model (8250U CPU @1.6 
-	GHz 1.80GHz) of an eight core i5. The operating system of the host machine is Windows 10 Home. The virtual
-	machine is given 5 GB of Ram and 4 cores for the computations. The operating system of the virtual machine is Ubuntu 18.04. All further setup information can be extracted 
-	from the github repository.
+	The entire evaluation is run on a virtual machine. The virtual machine is running through the program VirtualBox provided by Oracle.
+	The host system is a Huawei MateBook D notebook with 16 GB of RAM and the basic model (10210U CPU 1.6 GHz) of an eight core i5. The operating system of the host machine is Windows 10 Home. The virtual
+	machine is given 8 GB of Ram and 4 cores for the computations. The operating system of the virtual machine is Ubuntu 18.04. All further setup information can be extracted 
+	from the Github repository.
