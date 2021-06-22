@@ -35,5 +35,5 @@ Contains everything related to the first chapter, the evaluation
 #### /thesis
 Contains everything related to writing the actual thesis including latex setup
 
-#### /ros
+#### /ros_packages
 Contains everything related to the proposed framework in section two. 
